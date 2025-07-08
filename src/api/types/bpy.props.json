@@ -1,0 +1,14 @@
+// https://docs.blender.org/api/current/bpy.props.html#bpy.props.IntProperty
+[
+  "BoolProperty",
+  "BoolVectorProperty",
+  "CollectionProperty",
+  "EnumProperty",
+  "FloatProperty",
+  "FloatVectorProperty",
+  "IntProperty",
+  "IntVectorProperty",
+  "PointerProperty",
+  "RemoveProperty",
+  "StringProperty"
+]

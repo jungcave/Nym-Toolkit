@@ -1,0 +1,9 @@
+[
+  "ANY", 
+  "PRESS", 
+  "RELEASE", 
+  "CLICK", 
+  "DOUBLE_CLICK", 
+  "CLICK_DRAG", 
+  "NOTHING"
+]

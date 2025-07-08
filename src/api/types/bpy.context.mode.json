@@ -1,0 +1,39 @@
+{
+  "bpy.context.mode": [
+    "OBJECT",
+    "EDIT_MESH",
+    "EDIT_CURVE",
+    "EDIT_CURVES",
+    "EDIT_SURFACE",
+    "EDIT_TEXT",
+    "EDIT_ARMATURE",
+    "EDIT_METABALL",
+    "EDIT_LATTICE",
+    "EDIT_POINT_CLOUD",
+    "SCULPT",
+    "SCULPT_CURVES",
+    "PAINT_VERTEX",
+    "PAINT_WEIGHT",
+    "PAINT_TEXTURE",
+    "POSE",
+    "PARTICLE",
+    "EDIT_GPENCIL",
+    "SCULPT_GPENCIL",
+    "VERTEX_GPENCIL",
+    "WEIGHT_GPENCIL",
+    "PAINT_GPENCIL",
+    "EDIT_GREASE_PENCIL",
+    "SCULPT_GREASE_PENCIL",
+    "VERTEX_GREASE_PENCIL",
+    "WEIGHT_GREASE_PENCIL",
+    "PAINT_GREASE_PENCIL"
+  ],
+  "bpy.ops.object.mode_set": [
+    "OBJECT",
+    "EDIT",
+    "SCULPT",
+    "VERTEX_PAINT",
+    "WEIGHT_PAINT",
+    "TEXTURE_PAINT"
+  ]
+}
