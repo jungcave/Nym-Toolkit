@@ -1,11 +1,38 @@
-Nym Toolkit
+# Nym Toolkit
 
-Nym Toolkit is collection of tools that adds some missing essential Blender functionallity for 3d-artists.
+## EN
 
-SugarKit is the main part of toolkit. Kit contains Blender tools which cover some basic functions: some features for sculpt and texture editors (like trim curve for sculption or stencil mask transformation form for texturing), others are give more comfort and intuitive shortcut menus for base operations (like ability to instantly delete images and materials with shortcut from Blender project).
+Nym Toolkit is collection of tools for 3d-artists that adds varios essential functions to Blender.
 
-V3DTools and UVTools are collections for usefull snippets for View3d and UV editors, which have been taken from internet and other free open sources.
+Nym Toolkit consists of my brushpack, Nym Keyconfig and SugarKit addon. It also contains some operators based on free open sourced ones - they are dedicated for personal use and all links to original sources are present in TrdPartyBased.py.
 
-List of SugarKit features:
-3.1.x:
--...
+## SugarKit
+
+v3.1 features:
+- Object Viewport Alpha Toggle command
+- Object Viewport Color Set panel
+- Object Modifier Setup: Axis Bend command
+- Object Modifier Setup: Radial Array command
+- Outliner Unhide All Collections command
+- Outliner Select Grouped command
+- Vertex Group Rename Active command
+- Vertex Group Active To Sculpt Face Set command
+- Vertex Group Active To Paint Mask command
+- Curve Select Whole Handle command
+- Curve Toggle Props: Depth command
+- Curve Toggle Props: Fill Caps command
+- Brush Texture Image Set panel
+- Sculpt Draw Curve command setup
+- Sculpt Trim Curve command setup
+- Sculpt Symmetrize Weld panel
+- Paint Gradient Settings panel
+- Paint Color Palette panel
+- Paint Mask Transform panel
+- Pack All Saved command
+- Image Pack/Unpack command
+- Image/Shader Create New command
+- Image/Shader Set Active panel
+- Image/Shader Keep Fake User command
+- Image/Shader Make Single Copy command
+- Image/Shader Close command
+- Image/Shader Remove command

@@ -48,25 +48,25 @@ def register():
     # Windows Utils
     bpy.utils.register_class(WindowUpdateGlobalEventOperator)
     # Object Viewport Alpha/Color
-    bpy.utils.register_class(ObjectToggleViewportAlphaOperator)
-    addAddonKeymapItem('3D View', ObjectToggleViewportAlphaOperator.bl_idname,
+    bpy.utils.register_class(ObjectViewportAlphaToggleOperator)
+    addAddonKeymapItem('3D View', ObjectViewportAlphaToggleOperator.bl_idname,
                        'NINE')
-    bpy.utils.register_class(ActiveMaterialViewportColorPanelOperator)
-    bpy.utils.register_class(ActiveMaterialViewportColorPanel)
-    addAddonKeymapItem('Object Mode', ActiveMaterialViewportColorPanelOperator.bl_idname,
+    bpy.utils.register_class(ObjectViewportColorSetPanelOperator)
+    bpy.utils.register_class(ObjectViewportColorSetPanel)
+    addAddonKeymapItem('Object Mode', ObjectViewportColorSetPanelOperator.bl_idname,
                        'C')
+    # Object Modifiers Setups
+    bpy.utils.register_class(ModifierSetupAxisBendOperator)
+    addAddonKeymapItem('Object Mode', ModifierSetupAxisBendOperator.bl_idname,
+                       'B shift alt A')
+    bpy.utils.register_class(ModifierSetupRadialArrayOperator)
+    addAddonKeymapItem('Object Mode', ModifierSetupRadialArrayOperator.bl_idname,
+                       'A shift alt R')
     # Outliner Unhide All Collections
     bpy.utils.register_class(OutlinerUnhideAllCollectionsOperator)
     for kmn in ['Object Mode', 'Outliner']:
         addAddonKeymapItem(kmn, OutlinerUnhideAllCollectionsOperator.bl_idname,
                            'H ctrl alt')
-    # Object Setup Modifiers
-    bpy.utils.register_class(SetupAxisBendModifierOperator)
-    addAddonKeymapItem('Object Mode', SetupAxisBendModifierOperator.bl_idname,
-                       'B shift alt A')
-    bpy.utils.register_class(SetupRadialArrayModifierOperator)
-    addAddonKeymapItem('Object Mode', SetupRadialArrayModifierOperator.bl_idname,
-                       'A shift alt R')
     # Outliner Select Grouped
     bpy.utils.register_class(OutlinerSelectGroupedOperator)
     addAddonKeymapItem('Outliner', OutlinerSelectGroupedOperator.bl_idname,
@@ -74,7 +74,7 @@ def register():
     bpy.utils.register_class(OutlinerSelectGroupedUnhideOperator)
     addAddonKeymapItem('Outliner', OutlinerSelectGroupedUnhideOperator.bl_idname,
                        'G DOUBLE_CLICK')
-    # Vertex Groups
+    # Vertex Groups Ops
     bpy.utils.register_class(VertexGroupRenamePanelOperator)
     bpy.utils.register_class(VertexGroupRenamePanel)
     addAddonKeymapItem('Mesh', VertexGroupRenamePanelOperator.bl_idname,
@@ -82,26 +82,26 @@ def register():
     bpy.utils.register_class(VertexGroupToSculptFaceSetOperator)
     addAddonKeymapItem('Sculpt', VertexGroupToSculptFaceSetOperator.bl_idname,
                        'G alt')
-    bpy.utils.register_class(VertexGroupToPaintSelectOperator)
+    bpy.utils.register_class(VertexGroupToPaintSelectMaskOperator)
     for kmn in ['Vertex Selection (Weight, Vertex)', 'Face Mask (Weight, Vertex, Texture)']:
-        addAddonKeymapItem('Paint ' + kmn, VertexGroupToPaintSelectOperator.bl_idname,
+        addAddonKeymapItem('Paint ' + kmn, VertexGroupToPaintSelectMaskOperator.bl_idname,
                            'G')
-    # Curve Select Whole
+    # Curve Select Whole Handle
     bpy.utils.register_class(CurveSelectWholeHandlePointsOperator)
     addAddonKeymapItem('Curve', CurveSelectWholeHandlePointsOperator.bl_idname,
                        'LEFT_SHIFT DOUBLE_CLICK')
-    # Curve Props Togglers
+    # Curve Toggle Props
     bpy.utils.register_class(CurveToggleDepthOperator)
     addAddonKeymapItem('Curve', CurveToggleDepthOperator.bl_idname,
                        'T shift')
     bpy.utils.register_class(CurveToggleFillCapsOperator)
     addAddonKeymapItem('Curve', CurveToggleFillCapsOperator.bl_idname,
                        'F shift')
-    # Brush Texture Image Set Active
-    bpy.utils.register_class(BrushTextureImageSetActiveMenuOperator)
-    bpy.utils.register_class(BrushTextureImageSetActiveMenu)
+    # Brush Texture Image
+    bpy.utils.register_class(BrushTextureImageSetMenuOperator)
+    bpy.utils.register_class(BrushTextureImageSetMenu)
     for kmn in ["Sculpt", "Vertex Paint", "Weight Paint", "Image Paint"]:
-        addAddonKeymapItem(kmn, BrushTextureImageSetActiveMenuOperator.bl_idname,
+        addAddonKeymapItem(kmn, BrushTextureImageSetMenuOperator.bl_idname,
                            'T ctrl')
     # Sculpt Draw Curve
     bpy.utils.register_class(SculptDrawCurveOperator)
@@ -137,11 +137,11 @@ def register():
                            'LEFTMOUSE shift alt')
         addAddonKeymapItem('Paint ' + kmn, PaintTool_SelectLassoOverriderOperator.bl_idname,
                            'LEFTMOUSE shift ctrl alt')
-    # Paint Gradient
-    bpy.utils.register_class(PaintGradientPanelOperator)
-    bpy.utils.register_class(PaintGradientPanel)
+    # Paint Gradient Settings
+    bpy.utils.register_class(PaintGradientSettingsPanelOperator)
+    bpy.utils.register_class(PaintGradientSettingsPanel)
     for km in ['Vertex Paint', 'Image Paint']:
-        addAddonKeymapItem(km, PaintGradientPanelOperator.bl_idname,
+        addAddonKeymapItem(km, PaintGradientSettingsPanelOperator.bl_idname,
                            'G ctrl')
     # Paint Color Palette
     bpy.utils.register_class(PaintColorPalettePanelOperator)
@@ -160,21 +160,22 @@ def register():
     bpy.utils.register_class(PaintMaskImageInvertOperator)
     addAddonKeymapItem('Image Paint', PaintMaskImageInvertOperator.bl_idname,
                        'Q alt')
-    # Resource Pack
+    # Pack All Saved
     bpy.utils.register_class(PackAllSavedOperator)
     addAddonKeymapItem('Window', PackAllSavedOperator.bl_idname,
                        'SPACE shift ctrl')
+    # Image Pack/Unpack
     bpy.utils.register_class(ImagePackOperator)
     addAddonKeymapItem('Image', ImagePackOperator.bl_idname,
                        'SPACE alt')
     bpy.utils.register_class(ImageUnpackOperator)
     addAddonKeymapItem('Image', ImageUnpackOperator.bl_idname,
                        'SPACE alt DOUBLE_CLICK')
-    # Resource New
-    bpy.utils.register_class(ShaderNewOperator)
-    addAddonKeymapItem('Node Editor', ShaderNewOperator.bl_idname,
+    # Image/Shader Create New
+    bpy.utils.register_class(ShaderCreateNewOperator)
+    addAddonKeymapItem('Node Editor', ShaderCreateNewOperator.bl_idname,
                        'N alt')
-    # Resource Set Active
+    # Image/Shader Set Active
     bpy.utils.register_class(ImageSetActiveMenuOperator)
     bpy.utils.register_class(ImageSetActiveMenu)
     addAddonKeymapItem('Image', ImageSetActiveMenuOperator.bl_idname,
@@ -183,28 +184,28 @@ def register():
     bpy.utils.register_class(ShaderSetActiveMenu)
     addAddonKeymapItem('Node Editor', ShaderSetActiveMenuOperator.bl_idname,
                        'TAB shift ctrl')
-    # Resource Keep Fake User
+    # Image/Shader Keep Fake User
     bpy.utils.register_class(ImageKeepFakeUserOperator)
     addAddonKeymapItem('Image', ImageKeepFakeUserOperator.bl_idname,
                        'K')
     bpy.utils.register_class(ShaderKeepFakeUserOperator)
     addAddonKeymapItem('Node Editor', ShaderKeepFakeUserOperator.bl_idname,
                        'K')
-    # Resource Make Single Copy
+    # Image/Shader Make Single Copy
     bpy.utils.register_class(ImageMakeSingleCopyOperator)
     addAddonKeymapItem('Image', ImageMakeSingleCopyOperator.bl_idname,
                        'M alt')
     bpy.utils.register_class(MaterialMakeSingleCopyOperator)
     addAddonKeymapItem('Node Editor', MaterialMakeSingleCopyOperator.bl_idname,
                        'M alt')
-    # Resource Close
+    # Image/Shader Close
     bpy.utils.register_class(ImageCloseOperator)
     addAddonKeymapItem('Image', ImageCloseOperator.bl_idname,
                        'X ctrl alt')
     bpy.utils.register_class(ShaderCloseOperator)
     addAddonKeymapItem('Node Editor', ShaderCloseOperator.bl_idname,
                        'X ctrl alt')
-    # Resource Remove
+    # Image/Shader Remove
     bpy.utils.register_class(ImageRemoveConfirmMenuOperator)
     bpy.utils.register_class(ImageRemoveConfirmMenu)
     addAddonKeymapItem('Image',
@@ -238,24 +239,24 @@ def unregister():
     SugarKit.Menus(False)
     SugarKit.Subscriptions(False)
     bpy.utils.unregister_class(WindowUpdateGlobalEventOperator)
-    bpy.utils.unregister_class(ObjectToggleViewportAlphaOperator)
+    bpy.utils.unregister_class(ObjectViewportAlphaToggleOperator)
     bpy.utils.unregister_class(
-        ActiveMaterialViewportColorPanelOperator)
-    bpy.utils.unregister_class(ActiveMaterialViewportColorPanel)
-    bpy.utils.unregister_class(SetupAxisBendModifierOperator)
-    bpy.utils.unregister_class(SetupRadialArrayModifierOperator)
+        ObjectViewportColorSetPanelOperator)
+    bpy.utils.unregister_class(ObjectViewportColorSetPanel)
+    bpy.utils.unregister_class(ModifierSetupAxisBendOperator)
+    bpy.utils.unregister_class(ModifierSetupRadialArrayOperator)
     bpy.utils.unregister_class(OutlinerUnhideAllCollectionsOperator)
     bpy.utils.unregister_class(OutlinerSelectGroupedOperator)
     bpy.utils.unregister_class(OutlinerSelectGroupedUnhideOperator)
     bpy.utils.unregister_class(VertexGroupRenamePanelOperator)
     bpy.utils.unregister_class(VertexGroupRenamePanel)
     bpy.utils.unregister_class(VertexGroupToSculptFaceSetOperator)
-    bpy.utils.unregister_class(VertexGroupToPaintSelectOperator)
+    bpy.utils.unregister_class(VertexGroupToPaintSelectMaskOperator)
     bpy.utils.unregister_class(CurveSelectWholeHandlePointsOperator)
     bpy.utils.unregister_class(CurveToggleDepthOperator)
     bpy.utils.unregister_class(CurveToggleFillCapsOperator)
-    bpy.utils.unregister_class(BrushTextureImageSetActiveMenuOperator)
-    bpy.utils.unregister_class(BrushTextureImageSetActiveMenu)
+    bpy.utils.unregister_class(BrushTextureImageSetMenuOperator)
+    bpy.utils.unregister_class(BrushTextureImageSetMenu)
     bpy.utils.unregister_class(SculptDrawCurveOperator)
     bpy.utils.unregister_class(SculptTrimCurveModalOperator)
     bpy.utils.unregister_class(SculptTrimCurveResolutionDialogOperator)
@@ -265,8 +266,8 @@ def unregister():
     bpy.utils.unregister_class(PaintTool_SelectBoxOverriderOperator)
     bpy.utils.unregister_class(PaintTool_SelectCircleOverriderOperator)
     bpy.utils.unregister_class(PaintTool_SelectLassoOverriderOperator)
-    bpy.utils.unregister_class(PaintGradientPanelOperator)
-    bpy.utils.unregister_class(PaintGradientPanel)
+    bpy.utils.unregister_class(PaintGradientSettingsPanelOperator)
+    bpy.utils.unregister_class(PaintGradientSettingsPanel)
     bpy.utils.unregister_class(PaintColorPalettePanelOperator)
     bpy.utils.unregister_class(PaintColorPalettePanel)
     bpy.utils.unregister_class(PaintMaskUvTransformProps)
@@ -277,7 +278,7 @@ def unregister():
     bpy.utils.unregister_class(PackAllSavedOperator)
     bpy.utils.unregister_class(ImagePackOperator)
     bpy.utils.unregister_class(ImageUnpackOperator)
-    bpy.utils.unregister_class(ShaderNewOperator)
+    bpy.utils.unregister_class(ShaderCreateNewOperator)
     bpy.utils.unregister_class(ImageSetActiveMenuOperator)
     bpy.utils.unregister_class(ImageSetActiveMenu)
     bpy.utils.unregister_class(ShaderSetActiveMenuOperator)

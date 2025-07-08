@@ -1941,28 +1941,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Node Editor', {'wm.call_panel': {'name': 'NODE_PT_material_slots'}},
             'TAB ctrl')
 
-        # quick select
-        add('Node Editor', 'node.select_box',
-            'LEFTMOUSE shift CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
-        add('Node Editor', 'node.select_box',
-            'LEFTMOUSE shift ctrl CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
-        add('Node Editor', 'node.select_lasso',
-            'LEFTMOUSE shift alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
-        add('Node Editor', 'node.select_lasso',
-            'LEFTMOUSE shift ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
-
-        # select
-        add('Node Editor', {'node.select': {'extend': True, 'toggle': True}},
-            'LEFTMOUSE shift', disableOld='LEFTMOUSE shift')
-        add('Node Editor', 'node.select_linked_to',
-            'EQUAL shift', disableOld='L shift')
-        add('Node Editor', 'node.select_linked_from',
-            'MINUS shift', disableOld='L')
-        add('Node Editor', {'node.select_same_type_step': {'prev': False}},
-            'EQUAL alt', disableOld='RIGHT_BRACKET shift')
-        add('Node Editor', {'node.select_same_type_step': {'prev': True}},
-            'MINUS alt', disableOld='LEFT_BRACKET shift')
-
         # node
         disable('Node Editor', 'node.translate_attach', 'G')
         add('Node Editor', {'node.duplicate_move_keep_inputs': {'keep_inputs': True}},
@@ -1993,13 +1971,32 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Node Editor', {'node.link_make': {'replace': True}},
             'C DOUBLE_CLICK', disableOld='F shift')
 
+        # quick select
+        add('Node Editor', 'node.select_box',
+            'LEFTMOUSE shift CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
+        add('Node Editor', 'node.select_box',
+            'LEFTMOUSE shift ctrl CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
+        add('Node Editor', 'node.select_lasso',
+            'LEFTMOUSE shift alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
+        add('Node Editor', 'node.select_lasso',
+            'LEFTMOUSE shift ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
+
+        # select
+        disable('Node Editor', 'node.select', 'LEFTMOUSE shift')
+        add('Node Editor', 'node.select_linked_to',
+            'EQUAL shift', disableOld='L shift')
+        add('Node Editor', 'node.select_linked_from',
+            'MINUS shift', disableOld='L')
+        add('Node Editor', {'node.select_same_type_step': {'prev': False}},
+            'EQUAL alt', disableOld='RIGHT_BRACKET shift')
+        add('Node Editor', {'node.select_same_type_step': {'prev': True}},
+            'MINUS alt', disableOld='LEFT_BRACKET shift')
+
         # links
         add('Node Editor', 'node.add_reroute',
             'LEFTMOUSE ctrl CLICK_DRAG', disableOld='RIGHTMOUSE shift CLICK_DRAG')
-        add('Node Editor', 'node.links_mute',
-            'LEFTMOUSE alt CLICK_DRAG')
         add('Node Editor', 'node.links_cut',
-            'LEFTMOUSE ctrl alt CLICK_DRAG')
+            'RIGHTMOUSE alt CLICK_DRAG', disableOld='RIGHTMOUSE ctrl CLICK_DRAG')
 
         # frame (block)
         add('Node Editor', 'node.join', 'B', disableOld='J ctrl')

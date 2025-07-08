@@ -36,7 +36,7 @@ def Menus(isRegister):
     def view3d_mt_view(self, context):
         self.layout.separator()
         self.layout.operator_context = "INVOKE_DEFAULT"
-        self.layout.operator(ObjectToggleViewportAlphaOperator.bl_idname)
+        self.layout.operator(ObjectViewportAlphaToggleOperator.bl_idname)
 
     if isRegister:
         bpy.types.VIEW3D_MT_view.append(view3d_mt_view)
@@ -100,7 +100,7 @@ def isAreaUnderMousePointer(area, x, y):
 # / Object Viewport Alpha/Color
 
 
-class ObjectToggleViewportAlphaOperator(bpy.types.Operator):
+class ObjectViewportAlphaToggleOperator(bpy.types.Operator):
     """Toggle object's viewport display color alpha."""
     bl_label = "Toggle Opacity"
     bl_idname = "object.nym_object_toggle_viewport_alpha"
@@ -148,8 +148,9 @@ class ObjectToggleViewportAlphaOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ActiveMaterialViewportColorPanelOperator(bpy.types.Operator):
-    bl_label = "Set Active Material Viewport Display Color"
+class ObjectViewportColorSetPanelOperator(bpy.types.Operator):
+    """Set object's active material viewport display color."""
+    bl_label = "Set Viewport Color"
     bl_idname = "object.nym_active_material_viewport_color_panel"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -188,12 +189,12 @@ class ActiveMaterialViewportColorPanelOperator(bpy.types.Operator):
         bpy.ops.object.select_linked(extend=False, type='MATERIAL')
 
         bpy.ops.wm.call_panel(
-            name=ActiveMaterialViewportColorPanel.bl_idname)
+            name=ObjectViewportColorSetPanel.bl_idname)
 
         return {'FINISHED'}
 
 
-class ActiveMaterialViewportColorPanel(bpy.types.Panel):
+class ObjectViewportColorSetPanel(bpy.types.Panel):
     bl_space_type = 'TOPBAR'  # requered panel dummy
     bl_region_type = 'HEADER'  # requered panel dummy
     bl_label = "Set Viewport Color"
@@ -227,7 +228,7 @@ glob.prevPaletteColor = None
 def SubscribeBrushColor(isRegister=True):
     brushColorOwner = object()
 
-    def setActiveMaterialViewportColor():
+    def setObjectViewportColorSet():
         global glob
 
         try:
@@ -281,8 +282,8 @@ def SubscribeBrushColor(isRegister=True):
         glob.prevPaletteColor = paletteColor
 
     def handleBrushColorChange():
-        # After ActiveMaterialViewportColorPanel changes
-        setActiveMaterialViewportColor()
+        # After ObjectViewportColorSetPanel changes
+        setObjectViewportColorSet()
 
     def subscribeBrushColor():
         bpy.msgbus.subscribe_rna(
@@ -310,9 +311,9 @@ def SubscribeBrushColor(isRegister=True):
 # / Modifier Setups
 
 
-class SetupAxisBendModifierOperator(bpy.types.Operator):
+class ModifierSetupAxisBendOperator(bpy.types.Operator):
     bl_label = "Add Modifier Setup"
-    bl_idname = "object.nym_setup_axis_bend_modifier"
+    bl_idname = "object.nym_modifier_setup_axis_bend"
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -340,7 +341,7 @@ class SetupAxisBendModifierOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SetupRadialArrayModifierOperator(bpy.types.Operator):
+class ModifierSetupRadialArrayOperator(bpy.types.Operator):
     bl_label = "Add Modifier Setup"
     bl_idname = "object.nym_setup_radial_array_modifier"
     bl_options = {'REGISTER', 'UNDO'}
@@ -531,9 +532,9 @@ class VertexGroupToSculptFaceSetOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class VertexGroupToPaintSelectOperator(bpy.types.Operator):
-    bl_label = "Vertex Group To Paint Select"
-    bl_idname = "paint.nym_vertex_group_to_paint_select"
+class VertexGroupToPaintSelectMaskOperator(bpy.types.Operator):
+    bl_label = "Vertex Group To Paint Select Mask"
+    bl_idname = "paint.nym_vertex_group_to_paint_select_mask"
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -632,8 +633,8 @@ class CurveToggleFillCapsOperator(bpy.types.Operator):
 # / Brush Tools
 
 
-class BrushTextureImageSetActiveMenuOperator(bpy.types.Operator):
-    bl_label = "Brush Texture Image Set Active Menu"
+class BrushTextureImageSetMenuOperator(bpy.types.Operator):
+    bl_label = "Brush Texture Image Set Menu"
     bl_idname = "paint.nym_brush_texture_image_set_active_menu"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -645,11 +646,11 @@ class BrushTextureImageSetActiveMenuOperator(bpy.types.Operator):
 
         context.scene.nym_active_brush_texture_image = tex.image
         bpy.ops.wm.call_menu(
-            name=BrushTextureImageSetActiveMenu.bl_idname)
+            name=BrushTextureImageSetMenu.bl_idname)
         return {'FINISHED'}
 
 
-class BrushTextureImageSetActiveMenu(bpy.types.Menu):
+class BrushTextureImageSetMenu(bpy.types.Menu):
     bl_label = "Set Texture Image"
     bl_idname = "nym_brush_texture_image_set_active_menu"
 
@@ -1343,8 +1344,8 @@ class PaintTool_SelectLassoOverriderOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class PaintGradientPanelOperator(bpy.types.Operator):
-    bl_label = "Paint Gradient Panel"
+class PaintGradientSettingsPanelOperator(bpy.types.Operator):
+    bl_label = "Paint Gradient Settings Panel"
     bl_idname = "paint.nym_paint_gradient_panel"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -1363,11 +1364,11 @@ class PaintGradientPanelOperator(bpy.types.Operator):
             return {'FINISHED'}
 
         bpy.ops.wm.call_panel(
-            name=PaintGradientPanel.bl_idname)
+            name=PaintGradientSettingsPanel.bl_idname)
         return {'FINISHED'}
 
 
-class PaintGradientPanel(bpy.types.Panel):
+class PaintGradientSettingsPanel(bpy.types.Panel):
     bl_space_type = 'TOPBAR'  # requered panel dummy
     bl_region_type = 'HEADER'  # requered panel dummy
     bl_label = "Gradient"
@@ -1686,7 +1687,10 @@ class PaintMaskImageInvertOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# / Resource Pack
+# / Resources
+
+
+# Pack
 
 
 class PackAllSavedOperator(bpy.types.Operator):
@@ -1725,10 +1729,10 @@ class ImageUnpackOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# / Resource New
+# Create New
 
 
-class ShaderNewOperator(bpy.types.Operator):
+class ShaderCreateNewOperator(bpy.types.Operator):
     bl_label = "Shader New"
     bl_idname = "node.nym_shader_new"
     bl_options = {'REGISTER', 'UNDO'}
@@ -1753,7 +1757,7 @@ class ShaderNewOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# / Resource Set Active
+# Set Active
 
 
 class ImageSetActiveMenuOperator(bpy.types.Operator):
@@ -1825,7 +1829,7 @@ class ShaderSetActiveMenu(bpy.types.Menu):
                     lineset, "linestyle", new="scene.freestyle_linestyle_new")
 
 
-# / Resource Keep Fake User
+# Keep Fake User
 
 
 class ImageKeepFakeUserOperator(bpy.types.Operator):
@@ -1879,7 +1883,7 @@ class ShaderKeepFakeUserOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# / Resource Make Single Copy
+# Make Single Copy
 
 
 class ImageMakeSingleCopyOperator(bpy.types.Operator):
@@ -1917,7 +1921,7 @@ class MaterialMakeSingleCopyOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# / Resource Close
+# Close
 
 
 class ImageCloseOperator(bpy.types.Operator):
@@ -1954,7 +1958,7 @@ class ShaderCloseOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# / Resource Remove
+# Remove
 
 
 class ImageRemoveConfirmMenu(bpy.types.Menu):
