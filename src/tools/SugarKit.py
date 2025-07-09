@@ -1276,7 +1276,7 @@ class PaintTool_SelectOverriderOperator(bpy.types.Operator):
         if tool in ['builtin.select_box', 'builtin.select_lasso']:
             bpy.ops.view3d.select(
                 'INVOKE_DEFAULT', extend=not self.eventCtrl, deselect=self.eventCtrl)
-        mode = 'ADD' if self.eventCtrl else 'SUB'
+        mode = 'ADD' if not self.eventCtrl else 'SUB'
         if tool in ['builtin.select', 'builtin.select_box']:
             bpy.ops.view3d.select_box('INVOKE_DEFAULT', mode=mode)
         elif tool == 'builtin.select_circle':
@@ -1303,7 +1303,7 @@ class PaintTool_SelectBoxOverriderOperator(bpy.types.Operator):
     def execute(self, context):
         bpy.ops.view3d.select(
             'INVOKE_DEFAULT', extend=not self.eventCtrl, deselect=self.eventCtrl)
-        mode = 'ADD' if self.eventCtrl else 'SUB'
+        mode = 'ADD' if not self.eventCtrl else 'SUB'
         bpy.ops.view3d.select_box('INVOKE_DEFAULT', mode=mode)
         return {'FINISHED'}
 
@@ -1323,7 +1323,7 @@ class PaintTool_SelectCircleOverriderOperator(bpy.types.Operator):
         return self.execute(context)
 
     def execute(self, context):
-        mode = 'ADD' if self.eventCtrl else 'SUB'
+        mode = 'ADD' if not self.eventCtrl else 'SUB'
         bpy.ops.view3d.select_circle('INVOKE_DEFAULT', mode=mode)
         return {'FINISHED'}
 
@@ -1345,7 +1345,7 @@ class PaintTool_SelectLassoOverriderOperator(bpy.types.Operator):
     def execute(self, context):
         bpy.ops.view3d.select(
             'INVOKE_DEFAULT', extend=not self.eventCtrl, deselect=self.eventCtrl)
-        mode = 'ADD' if self.eventCtrl else 'SUB'
+        mode = 'ADD' if not self.eventCtrl else 'SUB'
         bpy.ops.view3d.select_lasso('INVOKE_DEFAULT', mode=mode)
         return {'FINISHED'}
 

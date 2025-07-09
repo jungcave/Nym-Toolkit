@@ -385,7 +385,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             add(kmn, v, 'F DOUBLE_CLICK')
         add('3D View', 'view3d.localview', 'V DOUBLE_CLICK', disableOld='SLASH')
         add('3D View', 'view3d.localview', 'RET shift', disableOld='NUMPAD_SLASH')
-        add('3D View', 'view3d.select',
+        add('3D View', {'view3d.select': {'center': True}},
             'LEFTMOUSE V')
         add('3D View', 'view3d.localview_remove_from',
             'LEFTMOUSE V RELEASE', disableOld='SLASH alt')
