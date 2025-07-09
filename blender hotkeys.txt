@@ -1283,6 +1283,7 @@ node wrangler		shift W			{b}
   reset (selected node)	  alt R			[*] backspace
     backdrop	 	    alt Z		[*] Z
   ||
+  copy to selected	  shift alt C		[*] shift C
   frame (block)		  shift ctrl B		[*] shift P # frame selected
   copy label		  L			[*] shift V
   clear label		  alt L

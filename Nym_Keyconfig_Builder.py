@@ -373,7 +373,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
                 add(kmn, v + 'view_selected', 'F', disableOld='NUMPAD_PERIOD')
         for kmn, v in {
             'Dopesheet': 'action.view_all',
-            '3D view': {'view3d.view_all': {'center': False}},
+            '3D View': {'view3d.view_all': {'center': False}},
             'Graph Editor': 'graph.view_all',
             'NLA Editor': 'nla.view_all',
             'Sequencer': 'sequencer.view_all',
@@ -2103,6 +2103,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
                            'R alt', disableOld='BACK_SPACE')
         addAddonKeymapItem('Node Editor', 'node.nw_bg_reset',
                            'Z alt', disableOld='Z')
+        addAddonKeymapItem('Node Editor', {'wm.call_menu': {'name': 'NODE_MT_nw_copy_node_properties_menu'}},
+                           'C shift alt', disableOld='C shift')
         addAddonKeymapItem('Node Editor', 'node.nw_frame_selected',
                            'B shift ctrl', disableOld='P shift')
         addAddonKeymapItem('Node Editor', 'node.nw_copy_label',

@@ -51,6 +51,7 @@ def Subscriptions(isRegister):
 
 # / Window Utils
 
+
 glob = SimpleNamespace()
 glob.event = SimpleNamespace()
 
@@ -149,6 +150,7 @@ class ObjectViewportAlphaToggleOperator(bpy.types.Operator):
 
 
 class ObjectViewportColorSetPanelOperator(bpy.types.Operator):
+    # This operator inits values for ObjectViewportColorSetPanel
     """Set object's active material viewport display color."""
     bl_label = "Set Viewport Color"
     bl_idname = "object.nym_active_material_viewport_color_panel"
@@ -188,6 +190,9 @@ class ObjectViewportColorSetPanelOperator(bpy.types.Operator):
         # Select only objects with active material
         bpy.ops.object.select_linked(extend=False, type='MATERIAL')
 
+        # Activate unified color to unable panel's changed color add to palette
+        context.scene.tool_settings.unified_paint_settings.use_unified_color = True
+
         bpy.ops.wm.call_panel(
             name=ObjectViewportColorSetPanel.bl_idname)
 
@@ -195,6 +200,7 @@ class ObjectViewportColorSetPanelOperator(bpy.types.Operator):
 
 
 class ObjectViewportColorSetPanel(bpy.types.Panel):
+    # This panel's changes trigger SubscribeBrushColor
     bl_space_type = 'TOPBAR'  # requered panel dummy
     bl_region_type = 'HEADER'  # requered panel dummy
     bl_label = "Set Viewport Color"
@@ -244,7 +250,7 @@ def SubscribeBrushColor(isRegister=True):
         except Exception as er:
             brush = None
         try:
-            paletteColor = bpy.context.tool_settings.gpencil_paint.palette.colors.active.color
+            paletteColor = bpy.context.scene.tool_settings.gpencil_paint.palette.colors.active.color
         except Exception as er:
             paletteColor = None
 
