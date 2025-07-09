@@ -371,6 +371,18 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
                 disable('3D View', 'view3d.view_selected', 'NDOF_BUTTON_FIT')
             else:
                 add(kmn, v + 'view_selected', 'F', disableOld='NUMPAD_PERIOD')
+        for kmn, v in {
+            'Dopesheet': 'action.view_all',
+            '3D view': {'view3d.view_all': {'center': False}},
+            'Graph Editor': 'graph.view_all',
+            'NLA Editor': 'nla.view_all',
+            'Sequencer': 'sequencer.view_all',
+            'SequencerPreview': 'sequencer.view_all_preview',
+            'Clip Editor': 'clip.view_all',
+            'Clip Graph Editor': 'clip.graph_view_all',
+            'Clip Dopesheet Editor': 'clip.dopesheet_view_all',
+        }.items():
+            add(kmn, v, 'F DOUBLE_CLICK')
         add('3D View', 'view3d.localview', 'V DOUBLE_CLICK', disableOld='SLASH')
         add('3D View', 'view3d.localview', 'RET shift', disableOld='NUMPAD_SLASH')
         add('3D View', 'view3d.select',
