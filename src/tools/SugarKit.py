@@ -190,7 +190,7 @@ class ObjectViewportColorSetPanelOperator(bpy.types.Operator):
         # Select only objects with active material
         bpy.ops.object.select_linked(extend=False, type='MATERIAL')
 
-        # Activate unified color to unable panel's changed color add to palette
+        # Activate unified color to fix layout.template_palette color add
         context.scene.tool_settings.unified_paint_settings.use_unified_color = True
 
         bpy.ops.wm.call_panel(
@@ -391,7 +391,7 @@ class ModifierSetupRadialArrayOperator(bpy.types.Operator):
 
 
 # TODO: 3.2.x
-# SetupCurveFillSolidModifierOperator [shift alt F C]
+# SetupCurveFillSolidModifierOperator [shift alt F S] (modes: object, curve)
 
 
 # / Outliner Select Grouped
@@ -612,7 +612,7 @@ class CurveToggleFillCapsOperator(bpy.types.Operator):
 
 
 # TODO: 3.2.x
-# CurveSeparateBySplineParts [ctrl alt J]
+# CurveSeparateBySplineParts [shift alt J]
 
 
 # TODO: 3.2.x
@@ -628,7 +628,7 @@ class CurveToggleFillCapsOperator(bpy.types.Operator):
 
 
 # TODO: 3.2.x
-# CurveFillWithGeometryNodeModifierOperator [shift alt F]
+# CurveFillWithGeoNodeModifierOperator [shift alt F C] (modes: object, curve)
 # - if bpy.data.node_groups has group that group.node_tree.name=='Positioned Curve Fill'
 #   - else buildPositionedCurveFillGeometryNodeGroup()
 #
@@ -667,11 +667,11 @@ class BrushTextureImageSetMenu(bpy.types.Menu):
 
 
 # TODO: 3.3.x
-# BrushDragLineModalOperator (sculpt/vertex/weight/image) [alt LB]              *switch mode + reassign event.alt default behaviour (replace with ctrl)
-# BrushDragSmoothStrokeModalOperator (vertex/weight +image) [shift ctrl LB]     *activate smooth + for 3d->image add [paint.image_paint] stroke:[smooth]
-# BrushDragSoftenBlurModalOperator (image +vertex/weight) [shift RB]            *switch tool + for 3d->vertex/weight add [paint.VERTEX/WEIGHT_paint] stroke:[smooth]
-# BrushDragImageEraserModalOperator (image) [ctrl alt LB]                       *switch type
-# BrushDragWeightSampleModalOperator (weight) [shift LB]                        *switch tool
+# BrushStrokeDragLineModalOperator (sculpt/vertex/weight/image) [alt LB]              *switch mode + reassign event.alt default behaviour (replace with ctrl)
+# BrushStrokeDragSmoothStrokeModalOperator (vertex/weight +image) [shift ctrl LB]     *activate smooth + for 3d->image add [paint.image_paint] stroke:[smooth]
+# BrushStrokeDragSoftenBlurModalOperator (image +vertex/weight) [shift RB]            *switch tool + for 3d->vertex/weight add [paint.VERTEX/WEIGHT_paint] stroke:[smooth]
+# BrushStrokeDragImageEraserModalOperator (image) [ctrl alt LB]                       *switch type
+# BrushStrokeDragWeightSampleModalOperator (weight) [shift LB]                        *switch tool
 
 
 # / Sculpt Tools
@@ -701,8 +701,6 @@ class SculptDrawCurveOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# TODO: 3.2.x Make dynamic STATUS_TEXT (можно попробовать написать функцию, которая разобьет STATUS_TEXT в массив и в модалке проверит наличие ключа-комманды: если нет, то внесет новое значние в STATUS_TEXT)
-# TODO: 3.2.x Define matchKey('LEFTMOUSE shift', event) that combines parseHotkeyStringInput and compareKeyWithItem, and use it in modal to shorten code
 # TODO: 3.2.x Make modal keys setable from keymap settings
 class SculptTrimCurveModalOperator(bpy.types.Operator):
     thanks = [
@@ -715,7 +713,11 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     DRAW_HEADER_TEXT = "Trim Curve Innards (Draw)"
-    DRAW_STATUS_TEXT = "Cancel: Esc | Pass: Ent/Space | Draw: LM"
+    DRAW_STATUS_TEXT = """
+      Cancel: Esc | 
+      Pass: Ent/Space | 
+      Draw: LM
+    """
     HEADER_TEXT = "Trim Curve Innards"
     EXTERIOR_HEADER_TEXT = "Trim Curve Exterior"
     STATUS_TEXT = """
@@ -872,6 +874,7 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
         # C(event.type, ": ", event.value)
         try:
             global glob
+            isPen = not self.isDraw
 
             # / FINISHED
             if self.isFinish and not event.type == 'ESC':
@@ -884,7 +887,7 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
                 else:
                     return self.finish(self, context, glob.trimCurveResolution)
             elif event.type in ['RET', 'SPACE']:
-                if not self.isDraw:
+                if isPen:
                     bpy.ops.curve.nym_curve_resolution_dialog('INVOKE_DEFAULT')
                     self.isFinish = True
                     return {'RUNNING_MODAL'}
@@ -908,7 +911,7 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
                 self.mapModalToolKeys(self, context, False)
                 return {'CANCELLED'}
             # Tool has changed from ui
-            elif (self.isDraw and glob.workspaceActiveToolName != 'builtin.draw') or (not self.isDraw and glob.workspaceActiveToolName != 'builtin.pen'):
+            elif (self.isDraw and glob.workspaceActiveToolName != 'builtin.draw') or (isPen and glob.workspaceActiveToolName != 'builtin.pen'):
                 setModalTextInContext(context, None)
                 self.mapModalToolKeys(self, context, False)
                 return {'CANCELLED'}
@@ -927,20 +930,20 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
 
             # / PASSED PEN OPS
             # Close
-            elif not self.isDraw and event.type == 'LEFTMOUSE' and event.shift and event.ctrl:
+            elif isPen and event.type == 'LEFTMOUSE' and event.shift and event.ctrl:
                 self.historySteps += 1
                 return {'PASS_THROUGH'}
             # Extend
-            elif not self.isDraw and event.type == 'LEFTMOUSE' and event.shift:
+            elif isPen and event.type == 'LEFTMOUSE' and event.shift:
                 self.historySteps += 1
                 return {'PASS_THROUGH'}
             # Select
-            elif not self.isDraw and event.type == 'LEFTMOUSE' and not self.dbl.get('LEFTMOUSE'):
+            elif isPen and event.type == 'LEFTMOUSE' and not self.dbl.get('LEFTMOUSE'):
                 self.historySteps += 1
                 self.dbl['LEFTMOUSE'] = addTimerForContext(context)
                 return {'PASS_THROUGH'}
             # Extrude
-            elif not self.isDraw and event.type == 'LEFTMOUSE' and self.dbl.get('LEFTMOUSE'):
+            elif isPen and event.type == 'LEFTMOUSE' and self.dbl.get('LEFTMOUSE'):
                 # Add point only to existing spline
                 curve = context.active_object
                 actPoint = getCurveActivePoint(curve)
@@ -953,43 +956,43 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
                     context, self.dbl.get('LEFTMOUSE'))
                 return {'PASS_THROUGH'}
             # Insert/delete
-            elif not self.isDraw and event.type == 'LEFTMOUSE' and event.alt:
+            elif isPen and event.type == 'LEFTMOUSE' and event.alt:
                 self.historySteps += 1
                 return {'PASS_THROUGH'}
             # Drag
-            elif not self.isDraw and event.type == 'RIGHTMOUSE' and event.value not in ['RELEASE', 'CLICK']:
+            elif isPen and event.type == 'RIGHTMOUSE' and event.value not in ['RELEASE', 'CLICK']:
                 return {'PASS_THROUGH'}
 
             # / RUNNING PEN OPS
             # Toggle innards/exterior
-            elif not self.isDraw and event.type == 'T' and event.value == 'PRESS':
+            elif isPen and event.type == 'T' and event.value == 'PRESS':
                 self.isExterior = not self.isExterior
                 setModalTextInContext(
                     context, self.HEADER_TEXT if not self.isExterior else self.EXTERIOR_HEADER_TEXT, self.STATUS_TEXT)
                 return {'RUNNING_MODAL'}
             # Dissolve
-            elif not self.isDraw and event.type == 'X' and event.ctrl and event.value == 'PRESS':
+            elif isPen and event.type == 'X' and event.ctrl and event.value == 'PRESS':
                 self.historySteps += 1
                 bpy.ops.curve.dissolve_verts()
                 return {'RUNNING_MODAL'}
             # Curve cyclic (close)
-            elif not self.isDraw and event.type == 'C' and event.shift and event.value == 'PRESS':
+            elif isPen and event.type == 'C' and event.shift and event.value == 'PRESS':
                 bpy.ops.curve.cyclic_toggle()
                 return {'RUNNING_MODAL'}
             # Curve smooth
-            elif not self.isDraw and event.type == 'S' and event.shift and event.alt and event.value == 'PRESS':
+            elif isPen and event.type == 'S' and event.shift and event.alt and event.value == 'PRESS':
                 self.historySteps += 1
                 bpy.ops.curve.smooth()
                 return {'RUNNING_MODAL'}
             # Extrude
-            elif not self.isDraw and event.type == 'E' and event.value == 'PRESS':
+            elif isPen and event.type == 'E' and event.value == 'PRESS':
                 bpy.ops.curve.extrude_move('INVOKE_DEFAULT')
                 return {'RUNNING_MODAL'}
             # Select whole handle
-            elif not self.isDraw and event.type in ['LEFT_SHIFT'] and event.value == 'PRESS' and not self.dbl.get('SHIFT'):
+            elif isPen and event.type in ['LEFT_SHIFT'] and event.value == 'PRESS' and not self.dbl.get('SHIFT'):
                 self.dbl['SHIFT'] = addTimerForContext(context)
                 return {'PASS_THROUGH'}
-            elif not self.isDraw and event.type in ['LEFT_SHIFT'] and event.value == 'PRESS' and self.dbl.get('SHIFT'):
+            elif isPen and event.type in ['LEFT_SHIFT'] and event.value == 'PRESS' and self.dbl.get('SHIFT'):
                 actPoint = getCurveActivePoint(context.active_object, True)
                 selectWholeBezierPoint(actPoint)
 
@@ -997,10 +1000,10 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
                     context, self.dbl.get('SHIFT'))
                 return {'RUNNING_MODAL'}
             # Handlers type aligned/free, auto, vector
-            elif not self.isDraw and event.type in ['LEFT_CTRL'] and event.value == 'PRESS' and not self.dbl.get('CTRL'):
+            elif isPen and event.type in ['LEFT_CTRL'] and event.value == 'PRESS' and not self.dbl.get('CTRL'):
                 self.dbl['CTRL'] = addTimerForContext(context)
                 return {'PASS_THROUGH'}
-            elif not self.isDraw and event.type in ['LEFT_CTRL'] and event.value == 'PRESS' and self.dbl.get('CTRL'):
+            elif isPen and event.type in ['LEFT_CTRL'] and event.value == 'PRESS' and self.dbl.get('CTRL'):
                 actPoint = getCurveActivePoint(context.active_object)
                 if actPoint and actPoint.handle_left_type in ['FREE', 'VECTOR']:
                     bpy.ops.curve.handle_type_set(type='ALIGNED')
@@ -1009,63 +1012,63 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
                 self.dbl['CTRL'] = removeTimerFromContext(
                     context, self.dbl.get('CTRL'))
                 return {'RUNNING_MODAL'}
-            elif not self.isDraw and event.type in ['LEFT_ALT'] and not event.ctrl and event.value == 'PRESS' and not self.dbl.get('ALT'):
+            elif isPen and event.type in ['LEFT_ALT'] and not event.ctrl and event.value == 'PRESS' and not self.dbl.get('ALT'):
                 self.dbl['ALT'] = addTimerForContext(context)
                 return {'PASS_THROUGH'}
-            elif not self.isDraw and event.type in ['LEFT_ALT'] and not event.ctrl and event.value == 'PRESS' and self.dbl.get('ALT'):
+            elif isPen and event.type in ['LEFT_ALT'] and not event.ctrl and event.value == 'PRESS' and self.dbl.get('ALT'):
                 bpy.ops.curve.handle_type_set(type='AUTOMATIC')
                 self.dbl['ALT'] = removeTimerFromContext(
                     context, self.dbl.get('ALT'))
                 return {'RUNNING_MODAL'}
-            elif not self.isDraw and event.type in ['LEFT_ALT'] and event.ctrl and event.value == 'PRESS' and not self.dbl.get('ALT'):
+            elif isPen and event.type in ['LEFT_ALT'] and event.ctrl and event.value == 'PRESS' and not self.dbl.get('ALT'):
                 self.dbl['LEFT_ALT'] = addTimerForContext(context)
                 return {'PASS_THROUGH'}
-            elif not self.isDraw and event.type in ['LEFT_ALT'] and event.ctrl and event.value == 'PRESS' and self.dbl.get('ALT'):
+            elif isPen and event.type in ['LEFT_ALT'] and event.ctrl and event.value == 'PRESS' and self.dbl.get('ALT'):
                 bpy.ops.curve.handle_type_set(type='VECTOR')
                 self.dbl['ALT'] = removeTimerFromContext(
                     context, self.dbl.get('ALT'))
                 return {'RUNNING_MODAL'}
             # Handlers recalc
-            elif not self.isDraw and event.type == 'R' and event.shift and event.value == 'PRESS':
+            elif isPen and event.type == 'R' and event.shift and event.value == 'PRESS':
                 bpy.ops.curve.normals_make_consistent()
                 return {'RUNNING_MODAL'}
             # All de/select, invert
-            elif not self.isDraw and event.type == 'A' and not event.ctrl and event.value == 'PRESS':
+            elif isPen and event.type == 'A' and event.value == 'PRESS':
                 if getCurveActivePoint(context.active_object):
                     bpy.ops.curve.select_all(action='DESELECT')
                 else:
                     bpy.ops.curve.select_all(action='SELECT')
                 return {'RUNNING_MODAL'}
-            elif not self.isDraw and event.type == 'A' and not event.ctrl and event.alt and event.value == 'PRESS':
+            elif isPen and event.type == 'A' and event.alt and event.value == 'PRESS':
                 bpy.ops.curve.select_all(action='INVERT')
                 return {'RUNNING_MODAL'}
             # Scale, move, rotate
-            elif not self.isDraw and event.type == 'S' and event.value == 'PRESS':
+            elif isPen and event.type == 'S' and event.value == 'PRESS':
                 bpy.ops.transform.resize('INVOKE_DEFAULT')
                 return {'RUNNING_MODAL'}
-            elif not self.isDraw and event.type == 'D' and event.value == 'PRESS':
+            elif isPen and event.type == 'D' and event.value == 'PRESS':
                 bpy.ops.transform.translate('INVOKE_DEFAULT')
                 return {'RUNNING_MODAL'}
-            elif not self.isDraw and event.type == 'R' and event.value == 'PRESS':
+            elif isPen and event.type == 'R' and event.value == 'PRESS':
                 bpy.ops.transform.rotate('INVOKE_DEFAULT')
                 return {'RUNNING_MODAL'}
             # Prop-editing
-            elif not self.isDraw and event.type == 'P' and event.value == 'PRESS':
+            elif isPen and event.type == 'P' and event.value == 'PRESS':
                 context.tool_settings.use_proportional_edit = not context.tool_settings.use_proportional_edit
                 return {'RUNNING_MODAL'}
             # Focus
-            elif not self.isDraw and event.type == 'F' and event.value == 'PRESS':
+            elif isPen and event.type == 'F' and event.value == 'PRESS':
                 bpy.ops.view3d.view_selected(use_all_regions=False)
                 return {'RUNNING_MODAL'}
             # Redo/undo
-            elif not self.isDraw and event.type == 'Z' and event.shift and event.ctrl and event.value == 'PRESS':
+            elif isPen and event.type == 'Z' and event.shift and event.ctrl and event.value == 'PRESS':
                 try:
                     bpy.ops.ed.redo()
                     self.historySteps += 1
                 except Exception as er:
                     pass
                 return {'RUNNING_MODAL'}
-            elif not self.isDraw and event.type == 'Z' and event.ctrl and event.value == 'PRESS' and self.historySteps > 0:
+            elif isPen and event.type == 'Z' and event.ctrl and event.value == 'PRESS' and self.historySteps > 0:
                 self.historySteps -= 1
                 bpy.ops.ed.undo()
                 return {'RUNNING_MODAL'}
@@ -1162,7 +1165,6 @@ def SubscribeWorkSpace(isRegister=True):
                 bpy.context.mode, create=False).idname
         except Exception as er:
             glob.workspaceActiveToolName = ''
-
         try:
             glob.prevWorkspace = findBpyObjectByName(
                 glob.actWorkspace.name, bpy.data.workspaces)

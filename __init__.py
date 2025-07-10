@@ -148,7 +148,7 @@ def register():
     bpy.utils.register_class(PaintColorPalettePanel)
     for km in ['Vertex Paint', 'Image Paint']:
         addAddonKeymapItem(km, PaintColorPalettePanelOperator.bl_idname,
-                           'C shift')
+                           'C')
     # Paint Mask
     bpy.utils.register_class(PaintMaskUvTransformProps)
     bpy.types.Object.nym_paint_mask_uv_transform = bpy.props.PointerProperty(

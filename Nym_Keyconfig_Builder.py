@@ -1151,7 +1151,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'M shift alt')
 
         for kmn, v in {
-            'Curve': 'curve.split',
             'Mesh': 'mesh.split',
             'Armature': 'armature.split',
             'UV Editor': 'uv.select_split',
@@ -1164,7 +1163,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
 
         for kmn, v in {
             'Grease Pencil Stroke Edit Mode': 'gpencil.stroke_separate',
-            'Curve': 'curve.separate',
             'Mesh': 'mesh.separate',
             'Armature': 'armature.separate',
             'Node Editor': 'node.group_separate',
@@ -1327,6 +1325,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
 
     @classmethod
     def addCurvesHotkeys(cls):
+        # quick transforms
         add('Curve', 'transform.rotate', 'RIGHTMOUSE shift CLICK_DRAG')
         add('Curve', 'transform.resize', 'RIGHTMOUSE ctrl CLICK_DRAG')
 
@@ -1340,6 +1339,11 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         }.items():
             add(kmn, v, 'C shift ctrl', disableOld='C alt')
         add('Curve', 'curve.switch_direction', 'D shift')
+
+        add('Curve', 'curve.split', 'M ctrl alt', disableOld='Y')
+        add('Curve', 'curve.split', 'LEFT_CTRL alt DOUBLE_CLICK')
+        add('Curve', {'curve.separate': {'confirm': False}},
+            'J ctrl alt')
 
         # segments
         add('Curve', 'curve.make_segment', 'M shift ctrl', disableOld='F')
@@ -1788,7 +1792,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             add(kmn, {'wm.tool_set_by_id': {'name': 'builtin_brush.Draw'}},
                 'D')
             add(kmn, {'wm.tool_set_by_id': {'name': 'builtin_brush.Smear'}},
-                'M')
+                'S alt')
         for kmn in ['Weight Paint', 'Vertex Paint']:
             add(kmn, {'wm.tool_set_by_id': {'name': 'builtin_brush.Blur'}},
                 'THREE shift')
@@ -1803,7 +1807,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Vertex Paint', 'paint.vertex_color_set',
             'F alt DOUBLE_CLICK')
         add('Image Paint', {'wm.tool_set_by_id': {'name': 'builtin_brush.Clone'}},
-            'C')
+            'C alt')
 
     @classmethod
     def addImageAndUvHotkeys(cls):

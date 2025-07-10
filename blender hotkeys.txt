@@ -706,6 +706,10 @@ quick transforms
   ||
   toggle cyclic (close) shift ctrl C		[*] alt C
   switch direction	shift D			[+]
+  ||
+  split			M ctrl alt		[*] V
+    quick		  alt dbl ctrl		[+]
+  separate		J ctrl alt		[*] J alt
 
 [segments]
   make			shift ctrl M		[*] F # make segment
@@ -988,7 +992,7 @@ stencil texture
   swap			shift X			[*] X # swap colors
   reset (hover)		alt backspace , alt X	[*,+] backspace # reset to default #
   ||
-  color palette		shift C 		{n}
+  color palette		C 			{n}
 
 [weights]
   set weight		shift W			[*] shift K
@@ -1008,7 +1012,7 @@ stencil texture
   draw			D			[+]
   blur			shift 3			[+]
     soften		  shift 3		[+]
-  smear (mix)		M			[+]
+  smear			alt S			[+]
   ||
   average		alt V			[+]
   gradient		alt G			[+]
@@ -1018,7 +1022,7 @@ stencil texture
     vertex color	  alt dbl F		[*] shift K # set vertex colors
     set gradient colors	  ctrl G		{n}
   ||
-  clone			C			[+]
+  clone			alt C			[+]
     target (cursor)	  ctrl LB
 
 //
