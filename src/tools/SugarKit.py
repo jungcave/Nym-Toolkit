@@ -379,19 +379,18 @@ class ModifierSetupRadialArrayOperator(bpy.types.Operator):
 
 # TODO: 3.2.x
 # SetupCurveArrayModifierOperator [shift alt C A]
-# Setup curve array {n} [v] - Setup Curve Array:
-# - center target origin and move target to curve
-# - apply target object scale and copy rotation from curve
-# * Only curve/s selected
+# * if only curve selected curve/s selected:
 #   - sample target object
-# ** Only target object selected
+# * elif only target object selected:
 #   - draw curve in modal
-# (both curve/s and target object selected)
-# - CurveAppendToObjectWithModifiersOperator
+# when both curve/s and target object selected:
+# - CurveAppendToObjectWithModifiersOperator (parts 2 and 3)
 
 
 # TODO: 3.2.x
-# SetupCurveFillSolidModifierOperator [shift alt F S] (modes: object, curve)
+# SetupGeoNodeModifierOperator [shift alt dbl G]
+# - ask to add geo node (list existing)
+# - add geo node modifier
 
 
 # / Outliner Select Grouped
@@ -612,28 +611,29 @@ class CurveToggleFillCapsOperator(bpy.types.Operator):
 
 
 # TODO: 3.2.x
-# CurveSeparateBySplineParts [shift alt J]
+# CurveSeparateByLooseSplines [shift alt J]
 
 
 # TODO: 3.2.x
 # CurveAppendToObjectWithModifiersOperator [shift alt A]
-# - sample target with eyedropper
+# part 1:
+# - sample target with eyedropper (if not)
+# - center target origin and curve origin
 # - move target to curve
 # - apply target scale and copy rotation from curve
 # - parent curve to target (and target to curve parent if parent exists)
-# - separate curve by spline parts
-# - add array and curve modifiers to target
+# part 2:
+# - add/change array modifier to target - set type to fit curve and curve to the parented curve
+# - add/change curve modifier to target - set curve to the parented curve
+# part 3:
+# - separete curve by loose splines
+# * for each separated curve spline:
+#   - duplicate parent target object (with linked data)
+#   - parent duplicated object to original target
+#   - set duplicated object as new target
+#   - execute parts 1 and 2 (change modifiers curve target)
 #
 # https://blenderartists.org/t/how-to-draw-an-object-selection-eyedropper-in-an-addon/1287437/8?u=nyamba
-
-
-# TODO: 3.2.x
-# CurveFillWithGeoNodeModifierOperator [shift alt F C] (modes: object, curve)
-# - if bpy.data.node_groups has group that group.node_tree.name=='Positioned Curve Fill'
-#   - else buildPositionedCurveFillGeometryNodeGroup()
-#
-# https://blender.stackexchange.com/a/316970
-# https://blender.stackexchange.com/a/249779
 
 
 # / Brush Tools
@@ -1484,7 +1484,9 @@ class PaintColorPalettePanel(bpy.types.Panel):
 DIV = 100
 
 
-# TODO: 3.2.x complete resetTransformation()
+# TODO: 3.2.x Complete resetTransformation()
+# TODO: 3.2.x Add condition that object must be unwrapped (has at least one uv)
+# TODO: 3.2.x Ask to create uv duplicate for mask if object has only one uv
 class PaintMaskUvTransformProps(bpy.types.PropertyGroup):
     # set: bpy.types.Object.nym_paint_mask_uv_transform
     # get: context.active_object.nym_paint_mask_uv_transform

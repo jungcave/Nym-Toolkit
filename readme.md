@@ -4,7 +4,7 @@
 
 Nym Toolkit is collection of tools for 3d-artists that adds varios essential functions to Blender.
 
-Nym Toolkit consists of my brushpack, Nym Keyconfig and SugarKit addon. It also contains some operators based on free open sourced ones - they are dedicated for personal use and all links to original sources are present in TrdPartyBased.py.
+Nym Toolkit consists of my assetpack (with brushes, node groups, etc), Nym Keyconfig and SugarKit addon. It also contains some operators based on free open sourced ones - they are dedicated for personal use and all links to original sources are present in TrdPartyBased.py.
 
 ## SugarKit
 

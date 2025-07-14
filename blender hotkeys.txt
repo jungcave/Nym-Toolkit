@@ -50,8 +50,8 @@ zoom			ctrl MB			[-] shift B # zoom to border [-] shift ctrl -/= # zoom view
   trackpad		  trackpad ,
 			  ctrl trackpad		[+,+]
 ||
-pan			shift MB		[,+]
-						 
+pan			shift MB,
+			shift trackpad		[,+]
 ||
 rotate			MB
   *snap			  alt
@@ -63,12 +63,16 @@ rotate			MB
   top (z)		  alt 3			[*] num 7 # view axis
     active (selected)	    alt dbl 3		[*] shift num 7 # view axis
   ||
-  orbit opposite left	  alt 4 		[*] num 9 # view orbit
-    opposite down	    alt 5		[+]
-  left		    	  alt 6 		[*] num 4 # view orbit
-  right	   	    	  alt 7 		[*] num 6 # view orbit
-  down		    	  alt 8 		[*] num 2 # view orbit
-  up			  alt 9 		[*] num 8 # view orbit
+  orbit 
+    opposite hor	  alt 4 		[*] num 9 # view orbit
+    opposite ver	  alt 5			[+]
+    left		  alt left		[*] num 4 # view orbit
+    right	   	  alt right		[*] num 6 # view orbit
+    down		  alt down		[*] num 2 # view orbit
+    up			  alt up		[*] num 8 # view orbit
+  roll 
+    left		  alt 6			[*]
+    right		  alt 7			[*]
 
 quick annotation (grease pencil)
   draw			X LB			[*] D LB # grease > [gpencil.annotate] mode:[freehand]
@@ -283,10 +287,10 @@ parent
   clear parent		ctrl alt P		[+]
     quick		  alt dbl ctrl		[+]
 
-collection (group)				[-] ctrl G # [collection.create] [-] shift ctrl G # [collection.objects_add_active] [-] ctrl alt G # [collection.objects_remove_all]
+collection (group)				[-] ctrl G # [collection.create] [-] shift ctrl G # [collection.objects_add_active]
   group selected 	ctrl G			[*] M # move to collection
     new collection	  shift ctrl G		[+]
-  remove from group	alt G			[+]
+  remove from group	alt G			[+] [-] shift alt G # [collection.objects_remove_active] [-] shift ctrl alt G # [collection.objects_remove_all]
     delete link (unlink)  ctrl alt G		[*] alt G # [collection.objects_remove] 
   ||
   select (menu)		shift G
@@ -367,8 +371,8 @@ quick transforms
       *exclude		    shift
       *relative		    dbl
     reset		  alt D			[*] alt G # object > clear location
-    ||
     to cursor		  shift ctrl D		[+]
+    to active	  	  shift ctrl W		[+]
   rotate		R
     *axis		  X,Y,Z
     reset		  alt R
@@ -462,11 +466,14 @@ Overlay plane on rounded area {TexTools}:
     triangulate		  shift alt dbl T	[+]
     ||
     boolean		  shift alt B L		[+]
+    ||
     bool tool		  shift alt B T		{b} [*] shift ctrl B # bool tool
       difference	    shift alt dbl -	    [*] shift ctrl num -
       union		    shift alt dbl =	    [*] shift ctrl num +
       intersect		    shift alt dbl 8 	    [*] shift ctrl num 8
       slice		    shift alt dbl /	    [*] shift ctrl num /
+    ||
+    geometry node	  shift alt dbl G	{n}
 
 actions
   apply			ctrl A
@@ -557,6 +564,7 @@ copy	  	  	ctrl C
       quick		    alt dbl ctrl	[+]
   separate (unjoin)	alt J			[*] P # separate
     selected		  ctrl alt J		[+]
+    by loose parts	  shift alt J		[+]
   ||
   delete
     menu	shift X				[*,-] X , delete # mesh > delete [wm.call_menu] name:[VIEW3D_MT_edit_mesh_delete]
@@ -780,7 +788,7 @@ brush
   invert		  ctrl
   ||
   smooth (toggle)	shift ctrl LB		[*] shift S # 3d->sculpt/vertex/weight/image > [wm.context_toggle] context:[tool_settings.|sculpt,vertex/weight/image_paint|.brush.use_smooth_stroke]
-    radius		  R			[+]
+    radius factor	  R			[+]
   ||
   method		shift S			[*] E # context enum menu
     line (toggle)	  alt dbl LB		[+]
@@ -972,7 +980,7 @@ stencil texture
   invert		  ctrl LB
   ||
   smooth (toggle)	shift ctrl LB		[*] shift S # context toggle
-    radius		  R			[+] 
+    radius factor	  R			[+] 
   ||
   method		shift S			[*] E
     line (toggle)	  alt dbl LB		[+] 
@@ -1205,8 +1213,8 @@ quick select					[-] C
   box (set)		drag LB			[-] B
     extend		  shift drag LB		[+]
     subtract		  shift ctrl drag LB	[+]
-  lasso			shift alt LB		[+]
-    subtract	  	  shift ctrl alt LB	[+]
+  lasso			shift alt LB		[*] ctrl alt LB
+    subtract	  	  shift ctrl alt LB
 
 [select]					[-] shift LB # [node.select]
   linked to (extend)	shift =			[*] shift L
@@ -1221,17 +1229,18 @@ links
   mute (toggle)		ctrl alt drag RB
   cut (delete)		alt drag RB		[*] ctrl drag RM # node > [node.links_cut]
 
-frame (block)		B			[*] ctrl J # node > join nodes [node.join]
+frame (block)		dbl B			[*] ctrl J # node > join nodes [node.join]
   add to block		  ctrl B		[*] ctrl P # node > make parent [node.parent_set]
-  detach 		  alt B			[*] alt P # node > detach nodes [node.detach]
+    detach 		    alt B		[*] alt P # node > detach nodes [node.detach]
   ||
   rename (label)	ctrl R , alt enter
 
-group			ctrl G
+group			dbl G			[-] ctrl G
+  insert		  ctrl G		[+]
+    separate		    alt G		[*] P # node > separate [node.group_separate]
   ungroup		  ctrl alt G
-  separate		  alt G			[*] P # node > separate [node.group_separate]
   ||
-  edit/exit		ctrl E , enter		[*,+] tab ,
+  edit/exit		ctrl E , enter		[*,+] tab
     exit		  escape		[*] ctrl tab # edit group [v]:exit
 
 [add]
@@ -1263,7 +1272,7 @@ backimage					[-] alt RB # [node.backimage_sample]
   zoom in		=			[*] V # background image zoom
     out			  -			[*] alt V # background image zoom
 
-node wrangler		shift W			{b} 
+node wrangler		shift W			{b}
   preview	  	  ctrl clk RB		[*] shift ctrl LB # [node.nw_preview_node]
     in geometry		    shift ctrl clk RB	[*] shift alt LB # [node.nw_preview_node] [v]:run
     view output	    	    dbl V , shift enter	[*,+] O # node > [node.nw_link_out]
@@ -1288,6 +1297,7 @@ node wrangler		shift W			{b}
     backdrop	 	    alt Z		[*] Z
   ||
   copy to selected	  shift alt C		[*] shift C
+  ||
   frame (block)		  shift ctrl B		[*] shift P # frame selected
   copy label		  L			[*] shift V
   clear label		  alt L

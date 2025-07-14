@@ -121,7 +121,11 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Image', 'image.view_pan', 'TRACKPADPAN shift ANY')
         add('Node Editor', 'view2d.pan', 'TRACKPADPAN shift ANY')
 
-        for k, v in {'ONE': 'RIGHT', 'TWO': 'FRONT', 'THREE': 'TOP'}.items():
+        for k, v in {
+            'ONE': 'RIGHT',
+            'TWO': 'FRONT',
+            'THREE': 'TOP'
+        }.items():
             add('3D View', 'view3d.view_axis',
                 k + ' alt', disableOld=True, setKmiProps=lambda kmi: setTypeProp(kmi, v))
             add('3D View', {'view3d.view_axis': {'align_active': True}},
@@ -130,17 +134,33 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         for k, v in {
             'FOUR': 'ORBITLEFT',
             'FIVE': 'ORBITDOWN',
-            'SIX': 'ORBITLEFT',
-            'SEVEN': 'ORBITRIGHT',
-            'EIGHT': 'ORBITDOWN',
-            'NINE': 'ORBITUP'
         }.items():
-            id = {'view3d.view_orbit': {'angle': math.radians(180)}} if (
-                k == 'FOUR' or k == 'FIVE') else 'view3d.view_orbit'
-            add('3D View', id,
+            add('3D View', {'view3d.view_orbit': {'angle': math.radians(180)}},
                 k + ' alt', setKmiProps=lambda kmi: setTypeProp(kmi, v))
+
+        for k, v in {
+            'LEFT_ARROW': 'ORBITLEFT',
+            'RIGHT_ARROW': 'ORBITRIGHT',
+            'DOWN_ARROW': 'ORBITDOWN',
+            'UP_ARROW': 'ORBITUP'
+        }.items():
+            add('3D View', 'view3d.view_orbit',
+                k + ' alt', setKmiProps=lambda kmi: setTypeProp(kmi, v))
+
         for i in [2, 4, 6, 8, 9]:
-            disable('3D View', 'view3d.view_orbit', 'NUMPAD_' + str(i))
+            disable('3D View', 'view3d.view_orbit',
+                    'NUMPAD_' + str(i))
+
+        for k, v in {
+            'SIX': 'LEFT',
+            'SEVEN': 'RIGHT',
+        }.items():
+            add('3D View', 'view3d.view_roll',
+                k + ' alt', setKmiProps=lambda kmi: setTypeProp(kmi, v))
+
+        for i in [4, 6]:
+            disable('3D View', 'view3d.view_roll',
+                    'NUMPAD_' + str(i) + ' shift')
 
         # quick annotations
         add('Grease Pencil', {'gpencil.annotate': {'wait_for_input': False}},
@@ -721,6 +741,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         # collection group
         disable('Object Mode', 'collection.create', 'G ctrl')
         disable('Object Mode', 'collection.objects_add_active', 'G shift ctrl')
+        disable('Object Mode', 'collection.objects_remove_active', 'G shift alt')
         disable('Object Mode', 'collection.objects_remove_all', 'G shift ctrl alt')
 
         for kmn in ['Outliner', 'Object Mode']:
@@ -847,6 +868,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'D alt', disableOld='G alt')
         add('3D View', {'view3d.snap_selected_to_cursor': {'use_offset': True}},
             'D shift ctrl')
+        add('3D View', 'view3d.snap_selected_to_active',
+            'W shift ctrl')
         add('Transform Modal Map', 'TRANSLATE', 'D', disableOld='G')
 
         # object
@@ -943,15 +966,15 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'D DOUBLE_CLICK': 'DISPLACE',
             'C DOUBLE_CLICK': 'CURVE',
             'L DOUBLE_CLICK': 'LATTICE',
-            'S W': 'SHRINKWRAP',
-            'S D': 'SIMPLE_DEFORM',
-            'C D': 'SURFACE_DEFORM',
+            'W S': 'SHRINKWRAP',
+            'D S': 'SIMPLE_DEFORM',
+            'D C': 'SURFACE_DEFORM',
             'X DOUBLE_CLICK': 'ARRAY',
-            'S C': 'SCREW',
+            'C S': 'SCREW',
             'R DOUBLE_CLICK': 'REMESH',
-            'D E': 'DECIMATE',
+            'E D': 'DECIMATE',
             'T DOUBLE_CLICK': 'TRIANGULATE',
-            'B L': 'BOOLEAN'
+            'L B': 'BOOLEAN'
         }.items():
             add('Object Mode', 'object.modifier_add',
                 k + ' shift alt', setKmiProps=lambda kmi: setTypeProp(kmi, modType))
@@ -1171,6 +1194,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Sequencer', 'sequencer.images_separate', 'J alt', disableOld='Y')
         add('Mesh', 'mesh.separate',
             'J ctrl alt', setKmiProps=lambda kmi: setTypeProp(kmi, 'SELECTED'))
+        add('Mesh', 'mesh.separate',
+            'J shift alt', setKmiProps=lambda kmi: setTypeProp(kmi, 'LOOSE'))
 
         add('Mesh', {'wm.call_menu': {'name': 'VIEW3D_MT_edit_mesh_delete'}},
             'X shift', disableOld='X')
@@ -1343,7 +1368,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Curve', 'curve.split', 'M ctrl alt', disableOld='Y')
         add('Curve', 'curve.split', 'LEFT_CTRL alt DOUBLE_CLICK')
         add('Curve', {'curve.separate': {'confirm': False}},
-            'J ctrl alt')
+            'J ctrl alt', disableOld='P')
 
         # segments
         add('Curve', 'curve.make_segment', 'M shift ctrl', disableOld='F')
@@ -1411,8 +1436,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         }.items():
             add(kmn, {'wm.call_panel': {'name': v}},
                 'RIGHTMOUSE CLICK', disableOld='RIGHTMOUSE')
-        add('Sculpt', {'wm.call_panel': {'name': 'VIEW3D_PT_tools_brush_select'}},
-            'B shift')
+            add(kmn, {'wm.call_panel': {'name': 'VIEW3D_PT_tools_brush_select'}},
+                'B shift')
 
         # size/strenth effect
         for kmn, v in {
@@ -1494,7 +1519,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             add(kmn, {'wm.context_toggle': {'data_path': 'tool_settings.' + v + '.brush.use_smooth_stroke'}},
                 'LEFTMOUSE shift ctrl', disableOld='S shift')
             # smooth radius
-            add(kmn, {'wm.radial_control': {'data_path_primary': 'tool_settings.' + v + '.brush.smooth_stroke_radius'}},
+            add(kmn, {'wm.radial_control': {'data_path_primary': 'tool_settings.' + v + '.brush.smooth_stroke_factor'}},
                 'R')
             # method
             add(kmn, {'wm.context_menu_enum': {'data_path': 'tool_settings.' + v + '.brush.stroke_method'}},
@@ -1993,9 +2018,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Node Editor', 'node.select_box',
             'LEFTMOUSE shift ctrl CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
         add('Node Editor', 'node.select_lasso',
-            'LEFTMOUSE shift alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
-        add('Node Editor', 'node.select_lasso',
-            'LEFTMOUSE shift ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
+            'LEFTMOUSE shift alt CLICK_DRAG', disableOld='LEFTMOUSE ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
 
         # select
         disable('Node Editor', 'node.select', 'LEFTMOUSE shift')
@@ -2015,11 +2038,15 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'RIGHTMOUSE alt CLICK_DRAG', disableOld='RIGHTMOUSE ctrl CLICK_DRAG')
 
         # frame (block)
-        add('Node Editor', 'node.join', 'B', disableOld='J ctrl')
+        add('Node Editor', 'node.join', 'B DOUBLE_CLICK', disableOld='J ctrl')
         add('Node Editor', 'node.parent_set', 'B ctrl', disableOld='P ctrl')
         add('Node Editor', 'node.detach', 'B alt', disableOld='P alt')
 
         # group
+        add('Node Editor', 'node.group_make',
+            'G DOUBLE_CLICK', disableOld='G ctrl')
+        add('Node Editor', 'node.group_insert',
+            'G ctrl')
         add('Node Editor', 'node.group_separate',
             'G alt', disableOld='P')
         add('Node Editor', {'node.group_edit': {'exit': False}},
@@ -2027,43 +2054,31 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Node Editor', {'node.group_edit': {'exit': False}},
             'RET')
         add('Node Editor', {'node.group_edit': {'exit': True}},
-            'ESC')
+            'ESC', disableOld='TAB ctrl')
         add('Node Editor', {'node.select': {'deselect': True}},
             'ESC RELEASE')
 
         # add
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'S shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeBsdfPrincipled'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'S shift M', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeMixShader'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'ONE shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeValue'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'THREE shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeRGB'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'C shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeVertexColor'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'T shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeTexImage'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'T shift N', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeTexNoise'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'T shift V', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeTexVoronoi'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'U shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeHueSaturation'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'K shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeRGBCurve'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'M shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeMix'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'R shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeValToRGB'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'V shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeMapping'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'N shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeNormalMap'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'B shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeBump'))
-        add('Node Editor', {'node.add_node': {'use_transform': True}},
-            'E shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'ShaderNodeTexEnvironment'))
+        for k, v in {
+            'S DOUBLE_CLICK': 'ShaderNodeBsdfPrincipled',
+            'M S': 'ShaderNodeMixShader',
+            'ONE DOUBLE_CLICK': 'ShaderNodeValue',
+            'THREE DOUBLE_CLICK': 'ShaderNodeRGB',
+            'C DOUBLE_CLICK': 'ShaderNodeVertexColor',
+            'T DOUBLE_CLICK': 'ShaderNodeTexImage',
+            'N T': 'ShaderNodeTexNoise',
+            'V T': 'ShaderNodeTexVoronoi',
+            'U DOUBLE_CLICK': 'ShaderNodeHueSaturation',
+            'K DOUBLE_CLICK': 'ShaderNodeRGBCurve',
+            'M DOUBLE_CLICK': 'ShaderNodeMix',
+            'R DOUBLE_CLICK': 'ShaderNodeValToRGB',
+            'V DOUBLE_CLICK': 'ShaderNodeMapping',
+            'N DOUBLE_CLICK': 'ShaderNodeNormalMap',
+            'B DOUBLE_CLICK': 'ShaderNodeBump',
+            'E DOUBLE_CLICK': 'ShaderNodeTexEnvironment',
+        }.items():
+            add('Node Editor', {'node.add_node': {'use_transform': True}},
+                k + ' shift', setKmiProps=lambda kmi: setTypeProp(kmi, v))
 
         # backimage
         disable('Node Editor', 'node.backimage_sample', 'RIGHTMOUSE alt')
