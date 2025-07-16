@@ -64,17 +64,17 @@ def addAddonKeymapItem(
     hotkey,
     setKmiProps=None,
     disableOld=False,
-    disableOldExactOpts=None
+    disableOldExactProps=None,
 ):
-    wmks = bpy.context.window_manager.keyconfigs
+    wmkcs = bpy.context.window_manager.keyconfigs
     km, kmi = newKeymapItem(
-        keyconfig=wmks.addon,
+        keyconfig=wmkcs.addon,
         keymapName=keymapName,
         operatorData=operatorData,
         hotkey=parseHotkeyStringInput(hotkey),
         setKmiProps=setKmiProps,
         disableOld=parseHotkeyStringInput(disableOld),
-        disableOldExactOpts=parseHotkeyStringInput(disableOldExactOpts)
+        disableOldExactProps=parseHotkeyStringInput(disableOldExactProps),
     )
     addonKeymaps.append((km, kmi))
 
@@ -91,17 +91,17 @@ def addActiveKeymapItem(
     hotkey,
     setKmiProps=None,
     disableOld=False,
-    disableOldExactOpts=None
+    disableOldExactProps=None
 ):
-    wmks = bpy.context.window_manager.keyconfigs
+    wmkcs = bpy.context.window_manager.keyconfigs
     newKeymapItem(
-        keyconfig=wmks.active,
+        keyconfig=wmkcs.active,
         keymapName=keymapName,
         operatorData=operatorData,
         hotkey=parseHotkeyStringInput(hotkey),
         setKmiProps=setKmiProps,
         disableOld=parseHotkeyStringInput(disableOld),
-        disableOldExactOpts=parseHotkeyStringInput(disableOldExactOpts)
+        disableOldExactProps=parseHotkeyStringInput(disableOldExactProps)
     )
 
 
@@ -110,13 +110,56 @@ def disableActiveKeymapItem(
     operatorData,
     hotkey=None
 ):
-    wmks = bpy.context.window_manager.keyconfigs
+    wmkcs = bpy.context.window_manager.keyconfigs
     disableKeymapItem(
-        wmks.active,
+        wmkcs.active,
         keymapName,
         operatorData,
         parseHotkeyStringInput(hotkey)
     )
+
+
+def addUserKeymapItem(
+    keymapName,
+    operatorData,
+    hotkey,
+    setKmiProps=None,
+    disableOld=False,
+    disableOldExactProps=None
+):
+    wmkcs = bpy.context.window_manager.keyconfigs
+    newKeymapItem(
+        keyconfig=wmkcs.user,
+        keymapName=keymapName,
+        operatorData=operatorData,
+        hotkey=parseHotkeyStringInput(hotkey),
+        setKmiProps=setKmiProps,
+        disableOld=parseHotkeyStringInput(disableOld),
+        disableOldExactProps=parseHotkeyStringInput(disableOldExactProps)
+    )
+
+
+def editUserKeymapItem(
+    keymapName,
+    operatorData,
+    hotkey,
+    oldHotkey=None,
+    oldHotkeyExactProps=None,
+):
+    wmkcs = bpy.context.window_manager.keyconfigs
+    idName, properties = parseOperatorData(operatorData)
+
+    if oldHotkey == None:
+        kmi = wmkcs.user.keymaps[keymapName].keymap_items.find_from_operator(
+            idName)
+    elif type(oldHotkey) is str or type(oldHotkey) is dict:
+        kmi = findKeymapItem(
+            wmkcs.user, keymapName, idName, parseHotkeyStringInput(oldHotkey))
+    elif oldHotkeyExactProps != None:
+        kmi = findKeymapItem(
+            wmkcs.user, keymapName, operatorData, parseHotkeyStringInput(oldHotkey))
+
+    editKemapItemHotkey(kmi, parseHotkeyStringInput(hotkey))
 
 
 KEYMAP_NAME_SPACES = {"3D View": "VIEW_3D", "Image": "IMAGE_EDITOR", "Node Editor": "NODE_EDITOR",
@@ -139,6 +182,42 @@ def parseHotkeyStringInput(hotkey):  # 'A shift ctrl CLICK' -> {'A': ['shift', '
         return hotkey
 
 
+def parseKeymapNameSpace(keymapName):
+    name = keymapName
+    if keymapName in list(KEYMAP_NAME_SPACES.keys()):
+        space = KEYMAP_NAME_SPACES[keymapName]
+    else:
+        space = 'EMPTY'
+    return name, space
+
+
+def parseOperatorData(operatorData):
+    if type(operatorData) is dict:
+        idName = list(operatorData.keys())[0]
+        properties = operatorData[idName]
+    else:
+        idName = operatorData
+        properties = None
+    return idName, properties
+
+
+def parseKeyBinding(hotkey):
+    if type(hotkey) is dict:
+        key = list(hotkey.keys())[0]
+        modifiers = hotkey[key]
+        keyModifier = findIn(
+            modifiers, lambda it: it not in MODIFIERS and it not in INPUT_VALUES)
+        inputValue = findIn(modifiers, lambda it: it in INPUT_VALUES)
+        repeat = findIn(modifiers, lambda it: it == 'repeat')
+    else:
+        key = hotkey
+        modifiers = []
+        keyModifier = None
+        inputValue = None
+        repeat = None
+    return key, modifiers, keyModifier, inputValue, repeat
+
+
 def newKeymapItem(
     keyconfig,
     keymapName,
@@ -146,16 +225,14 @@ def newKeymapItem(
     hotkey,  # 'key' | {[key]: ['shift', 'ctrl', 'alt', 'X', 'CLICK']}
     setKmiProps=None,  # def - for non-default operators or enum props set by value
     disableOld=False,  # True - one that found by find_from_operator() | hotkey
-    disableOldExactOpts=None  # hotkey
+    disableOldExactProps=None,  # hotkey
 ):
-    name, space = parseKeymapNameSpace(keymapName)
+    kmName, space = parseKeymapNameSpace(keymapName)
     idName, properties = parseOperatorData(operatorData)
     key, modifiers, keyModifier, inputValue, repeat = parseKeyBinding(hotkey)
 
-    if keyconfig.name == 'Blender addon':
-        km = keyconfig.keymaps.new(name=name, space_type=space)
-    else:
-        km = keyconfig.keymaps[name]
+    km = keyconfig.keymaps.new(name=kmName, space_type=space) if (
+        keyconfig.name == 'Blender addon') else keyconfig.keymaps[kmName]
 
     if disableOld == True:
         kmi = km.keymap_items.find_from_operator(idName)
@@ -164,16 +241,16 @@ def newKeymapItem(
     elif type(disableOld) is str or type(disableOld) is dict:
         disableKeymapItem(
             keyconfig,
-            name,
+            kmName,
             idName,
             hotkey=disableOld,
         )
-    elif disableOldExactOpts != None:
+    elif disableOldExactProps != None:
         disableKeymapItem(
             keyconfig,
-            name,
+            kmName,
             operatorData,
-            hotkey=disableOldExactOpts,
+            hotkey=disableOldExactProps,
         )
 
     newMethod = getattr(
@@ -214,42 +291,6 @@ def newKeymapItem(
     return (km, kmi)
 
 
-def parseKeymapNameSpace(keymapName):
-    name = keymapName
-    if keymapName in list(KEYMAP_NAME_SPACES.keys()):
-        space = KEYMAP_NAME_SPACES[keymapName]
-    else:
-        space = 'EMPTY'
-    return name, space
-
-
-def parseOperatorData(operatorData):
-    if type(operatorData) is dict:
-        idName = list(operatorData.keys())[0]
-        properties = operatorData[idName]
-    else:
-        idName = operatorData
-        properties = None
-    return idName, properties
-
-
-def parseKeyBinding(hotkey):
-    if type(hotkey) is dict:
-        key = list(hotkey.keys())[0]
-        modifiers = hotkey[key]
-        keyModifier = findIn(
-            modifiers, lambda it: it not in MODIFIERS and it not in INPUT_VALUES)
-        inputValue = findIn(modifiers, lambda it: it in INPUT_VALUES)
-        repeat = findIn(modifiers, lambda it: it == 'repeat')
-    else:
-        key = hotkey
-        modifiers = []
-        keyModifier = None
-        inputValue = None
-        repeat = False
-    return key, modifiers, keyModifier, inputValue, repeat
-
-
 def disableKeymapItem(
     keyconfig,
     keymapName,  # '*' - in all keymaps
@@ -257,11 +298,6 @@ def disableKeymapItem(
                    # 'id' - with id with any props | {[id]: False} - with id only without props
     hotkey=None,
 ):
-    def compare(operatorData, hotkey, kmi, isModal):
-        isOpSame = compareOperatorWithItem(operatorData, kmi, isModal)
-        isKeySame = compareKeyWithItem(hotkey, kmi) if hotkey else True
-        return isOpSame and isKeySame
-
     if keymapName != '*':
         # Compare only in passed keymap
         try:
@@ -270,22 +306,23 @@ def disableKeymapItem(
             km = None
         if km and km.keymap_items:
             for kmi in km.keymap_items:
-                # /
-                # idName, properties = parseOperatorData(operatorData)
-                # key, modifiers, keyModifier, inputValue, repeat = parseKeyBinding(
-                #     hotkey)
-                # /
-                if compare(operatorData, hotkey, kmi, isModal=km.is_modal):
+                if compareKeymapItem(kmi, operatorData, hotkey, isModal=km.is_modal):
                     kmi.active = False
     else:
         # Compare in all keymaps
         for km in keyconfig.keymaps:
             for kmi in km.keymap_items:
-                if compare(operatorData, hotkey, kmi, isModal=km.is_modal):
+                if compareKeymapItem(kmi, operatorData, hotkey, isModal=km.is_modal):
                     kmi.active = False
 
 
-def compareOperatorWithItem(operatorData, kmi, isModal):
+def compareKeymapItem(kmi, operatorData, hotkey, isModal):
+    isOpSame = compareKmiWithOperator(kmi, operatorData, isModal)
+    isKeySame = compareKmiWithHotkey(kmi, hotkey)
+    return isOpSame and isKeySame
+
+
+def compareKmiWithOperator(kmi, operatorData, isModal, log=False):
     if type(operatorData) is str:
         if operatorData == '*':
             return True
@@ -318,44 +355,86 @@ def compareOperatorWithItem(operatorData, kmi, isModal):
     return True
 
 
-def compareKeyWithItem(hotkey, kmi):
+def compareKmiWithHotkey(kmi, hotkey, log=False):
+    if not hotkey:
+        return True
+
     key, modifiers, keyModifier, inputValue, repeat = parseKeyBinding(hotkey)
-    inputValue = inputValue if inputValue else 'PRESS'
-    if key != kmi.type:
-        return False
-    if (kmi.shift and not 'shift' in modifiers) or ('shift' in modifiers and not kmi.shift):
-        return False
-    if (kmi.ctrl and not 'ctrl' in modifiers) or ('ctrl' in modifiers and not kmi.ctrl):
-        return False
-    if (kmi.alt and not 'alt' in modifiers) or ('alt' in modifiers and not kmi.alt):
-        return False
-    if (kmi.oskey and not 'cmd' in modifiers) or ('cmd' in modifiers and not kmi.oskey):
-        return False
-    if (kmi.any and not 'any' in modifiers) or ('any' in modifiers and not kmi.any):
-        return False
+    different = []
+
+    if kmi.type != key:
+        different.append('type')
+    if (kmi.shift and 'shift' not in modifiers) or ('shift' in modifiers and not kmi.shift):
+        different.append('shift')
+    if (kmi.ctrl and 'ctrl' not in modifiers) or ('ctrl' in modifiers and not kmi.ctrl):
+        different.append('ctrl')
+    if (kmi.alt and 'alt' not in modifiers) or ('alt' in modifiers and not kmi.alt):
+        different.append('alt')
+    if (kmi.oskey and 'cmd' not in modifiers) or ('cmd' in modifiers and not kmi.oskey):
+        different.append('cmd')
+    if (kmi.any and 'any' not in modifiers) or ('any' in modifiers and not kmi.any):
+        different.append('any')
     if kmi.key_modifier != 'NONE' and kmi.key_modifier != keyModifier:
-        return False
-    if kmi.value != inputValue:
-        return False
-    return True
+        different.append('keymod')
+    if kmi.value != (inputValue if inputValue else 'PRESS'):
+        different.append('value')
+
+    return True if not len(different) else False
+
+
+def findKeymapItem(
+    keyconfig,
+    keymapName,
+    operatorData,
+    hotkey
+):
+    try:
+        km = keyconfig.keymaps[keymapName]
+    except Exception as er:
+        km = None
+    if km and km.keymap_items:
+        for kmi in km.keymap_items:
+            if compareKeymapItem(kmi, operatorData, hotkey, isModal=km.is_modal):
+                return kmi
+
+
+def editKemapItemHotkey(kmi, hotkey):
+    if not kmi:
+        return
+
+    key, modifiers, keyModifier, inputValue, repeat = parseKeyBinding(hotkey)
+
+    kmi.type = key
+    if 'any' in modifiers:
+        kmi.shift = False
+        kmi.ctrl = False
+        kmi.alt = False
+        kmi.oskey = False
+        kmi.any = True
+    else:
+        kmi.shift = 'shift' in modifiers
+        kmi.ctrl = 'ctrl' in modifiers
+        kmi.alt = 'alt' in modifiers
+        kmi.oskey = 'cmd' in modifiers
+    kmi.key_modifier = keyModifier if keyModifier else kmi.key_modifier
+    kmi.value = inputValue if inputValue else kmi.value
+    kmi.repeat = repeat if repeat != None else kmi.repeat
 
 
 # Sculpt trim curve modal:
-def getKeymapFromContext(context, name, keyconfig="active"):
-    wmks = context.window_manager.keyconfigs
-    if keyconfig == "active":
-        return wmks.active.keymaps[name]
-    elif keyconfig == "user":
-        # == wmks['Blender user'].keymaps[name]
-        return wmks.user.keymaps[name]
-    elif keyconfig == 'addon':
-        # == wmks['Blender addon'].keymaps[name]
-        return wmks.addon.keymaps[name]
-    elif keyconfig == 'default':
-        return wmks.default.keymaps[name]  # == wmks['Blender'].keymaps[name]
+def getKeymapFromContext(context, name, keyconfigName="active"):
+    wmkcs = context.window_manager.keyconfigs
+    if keyconfigName == "active":
+        return wmkcs.active.keymaps[name]
+    elif keyconfigName == "user":
+        return wmkcs.user.keymaps[name]  # == wmkcs['Blender user'].keymaps[name] \
+    elif keyconfigName == 'addon':
+        return wmkcs.addon.keymaps[name]  # == wmkcs['Blender addon'].keymaps[name] \
+    elif keyconfigName == 'default':
+        return wmkcs.default.keymaps[name]  # == wmkcs['Blender'].keymaps[name] \
     else:
         try:
-            return wmks[keyconfig].keymaps[name]
+            return wmkcs[keyconfigName].keymaps[name]
         except Exception as er:
             return None
 
@@ -387,28 +466,28 @@ def unableDisabledKeymapItems(keymap, disabledKeymapItemsIds):
 
 # Keyconf builder:
 def restoreDefaultKeymaps():
-    wmks = bpy.context.window_manager.keyconfigs
+    wmkcs = bpy.context.window_manager.keyconfigs
     # Restore keymaps to default to avoid future collision bugs
-    for dkm in wmks.default.keymaps:
+    for dkm in wmkcs.default.keymaps:
         dkm.restore_to_default()
 
 
 def buildNewActiveKeyconfig(name):
-    wmks = bpy.context.window_manager.keyconfigs
+    wmkcs = bpy.context.window_manager.keyconfigs
     # Get old keyconfig
     try:
-        kc = wmks[name.replace(" ", "_")]
+        kc = wmkcs[name.replace(" ", "_")]
     except Exception as er:
         kc = None
     # Remove old keyconfig if exists
     if kc:
-        wmks.active = kc
+        wmkcs.active = kc
         bpy.ops.wm.keyconfig_preset_add(remove_active=True)
     # Create new keyconfig
     bpy.ops.wm.keyconfig_preset_add(name=name)  # and set active
-    kc = wmks.active
+    kc = wmkcs.active
     # Copy all keymaps and keymap items from default keyconfig
-    for dkm in wmks.default.keymaps:
+    for dkm in wmkcs.default.keymaps:
         km = kc.keymaps.new(
             name=dkm.name,
             space_type=dkm.space_type,
@@ -452,7 +531,7 @@ def disableMacOsKeyBindingsInKeyconfig(
                                 kmi.active = False
 
 
-def removeAllInactiveKeymapItemsInKeyconfig(keyconfig):
+def clearAllInactiveKeymapItemsInKeyconfig(keyconfig):
     if keyconfig and keyconfig.keymaps:
         for km in keyconfig.keymaps:
             if km and km.keymap_items:
@@ -467,6 +546,10 @@ def saveAndExportKeyconfig(filename):
     filepath = bpy.path.native_pathsep(path + '/keyconfig/' + filename)
     bpy.ops.preferences.keyconfig_export(filepath=filepath, all=True)
 
+
+def clearAndSaveKeyconfig(keyconfig, filename):
+    clearAllInactiveKeymapItemsInKeyconfig(keyconfig)
+    saveAndExportKeyconfig(filename)
 
 # Kit
 

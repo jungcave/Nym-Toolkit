@@ -37,8 +37,8 @@ class AddonPreferences(bpy.types.AddonPreferences):
 
 def register():
     # / Preferences
-    bpy.utils.register_class(AddonPreferences)
     bpy.utils.register_class(BuildNymKeyconfigOperator)
+    bpy.utils.register_class(AddonPreferences)
 
     # / SugarKit
     importlib.reload(SugarKit)
@@ -117,26 +117,6 @@ def register():
     bpy.utils.register_class(SculptSymmetrizeWeldPanel)
     addAddonKeymapItem('Sculpt', SculptSymmetrizeWeldPanelOperator.bl_idname,
                        'W shift alt')
-    # Paint Tool Select (Overrider)
-    bpy.utils.register_class(PaintTool_SelectOverriderOperator)
-    bpy.utils.register_class(PaintTool_SelectBoxOverriderOperator)
-    bpy.utils.register_class(PaintTool_SelectCircleOverriderOperator)
-    bpy.utils.register_class(PaintTool_SelectLassoOverriderOperator)
-    for kmn in ['Vertex Selection (Weight, Vertex)', 'Face Mask (Weight, Vertex, Texture)']:
-        addAddonKeymapItem('Paint ' + kmn, PaintTool_SelectOverriderOperator.bl_idname,
-                           'LEFTMOUSE shift')
-        addAddonKeymapItem('Paint ' + kmn, PaintTool_SelectOverriderOperator.bl_idname,
-                           'LEFTMOUSE shift DOUBLE_CLICK')
-        addAddonKeymapItem('Paint ' + kmn, PaintTool_SelectBoxOverriderOperator.bl_idname,
-                           'LEFTMOUSE shift ctrl')
-        addAddonKeymapItem('Paint ' + kmn, PaintTool_SelectCircleOverriderOperator.bl_idname,
-                           'LEFTMOUSE alt')
-        addAddonKeymapItem('Paint ' + kmn, PaintTool_SelectCircleOverriderOperator.bl_idname,
-                           'LEFTMOUSE ctrl alt')
-        addAddonKeymapItem('Paint ' + kmn, PaintTool_SelectLassoOverriderOperator.bl_idname,
-                           'LEFTMOUSE shift alt')
-        addAddonKeymapItem('Paint ' + kmn, PaintTool_SelectLassoOverriderOperator.bl_idname,
-                           'LEFTMOUSE shift ctrl alt')
     # Paint Gradient Settings
     bpy.utils.register_class(PaintGradientSettingsPanelOperator)
     bpy.utils.register_class(PaintGradientSettingsPanel)
@@ -232,8 +212,8 @@ def register():
 
 def unregister():
     # / Preferences
-    bpy.utils.unregister_class(AddonPreferences)
     bpy.utils.unregister_class(BuildNymKeyconfigOperator)
+    bpy.utils.unregister_class(AddonPreferences)
     # / SugarKit
     SugarKit.Props(False)
     SugarKit.Menus(False)
@@ -262,10 +242,6 @@ def unregister():
     bpy.utils.unregister_class(SculptTrimCurveResolutionDialogOperator)
     bpy.utils.unregister_class(SculptSymmetrizeWeldPanelOperator)
     bpy.utils.unregister_class(SculptSymmetrizeWeldPanel)
-    bpy.utils.unregister_class(PaintTool_SelectOverriderOperator)
-    bpy.utils.unregister_class(PaintTool_SelectBoxOverriderOperator)
-    bpy.utils.unregister_class(PaintTool_SelectCircleOverriderOperator)
-    bpy.utils.unregister_class(PaintTool_SelectLassoOverriderOperator)
     bpy.utils.unregister_class(PaintGradientSettingsPanelOperator)
     bpy.utils.unregister_class(PaintGradientSettingsPanel)
     bpy.utils.unregister_class(PaintColorPalettePanelOperator)

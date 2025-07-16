@@ -154,7 +154,7 @@ view interface
   toggle		tab
     default (object)	  alt tab		[+]
   ||
-  switch active		ctrl enter , ctrl RB	[*,+] alt Q # transfer mode ,
+  switch active		ctrl enter , ctrl RB	[*,+] alt Q # transfer mode
   ||
   object		ctrl 1			[+]
   edit		  	ctrl 2			[+]
@@ -218,7 +218,7 @@ select tools
   by type		shift T			[+]
   ||
   all			dbl A			[*] A # (de)select all
-    deselect		  A			[*,+] alt A ,
+    deselect		  A			[*,+] alt A
   invert		alt A			[*] ctrl I # (de)select all [invert]
   ||
   hierarchy
@@ -696,8 +696,8 @@ Add depth:
 select whole handle	dbl shift		{n}
 
 quick transforms
-  rotate		drag shift RB		[+]
-  scale			drag ctrl RB		[+]
+  rotate		shift drag RB		[+]
+  scale			ctrl drag RB	** alt drag RB	[+]
 
 [curve]
   curve type		shift ctrl T		[+]
@@ -709,7 +709,7 @@ quick transforms
     fill caps	  	shift F
   ||
   extrude		E
-    to cursor (adaptive)  alt RB		[*] ctrl RB
+    to cursor (adaptive)  alt RB   ** alt clk RB		[*] ctrl RB
   duplicate (splited)	ctrl D			[*] shift D
   ||
   toggle cyclic (close) shift ctrl C		[*] alt C
@@ -780,12 +780,14 @@ brush
 
 [texture]
   select (menu)		shift T			[+]
-    set tex image	  ctrl T		{n}
-  ||
+    set image		  ctrl T		{n}
   angle (rotation)	alt R			[*] ctrl F # 3d->sculpt > [wm.radial_control] primary:[tool_settings.sculpt.brush.texture_slot.angle]
 
 [stroke]		LB
   invert		  ctrl
+  ||
+  jitter		** J			[+]
+  spacing		** alt J		[+]
   ||
   smooth (toggle)	shift ctrl LB		[*] shift S # 3d->sculpt/vertex/weight/image > [wm.context_toggle] context:[tool_settings.|sculpt,vertex/weight/image_paint|.brush.use_smooth_stroke]
     radius factor	  R			[+]
@@ -794,13 +796,21 @@ brush
     line (toggle)	  alt dbl LB		[+]
       *snap		    alt
     curve (toggle)	  shift alt LB		[+]
-      draw (apply)    	    enter , ctrl LB
-      select (set)	    LB
-        extend (toggle)	      shift LB
-      add new		    dbl LB		[*] ctrl RB # paint curve > add curve point and slide
-      move		    RB
-        slide [rot+sca]	      shift RB
-      remove		    ctrl X
+
+paint curve					** [-] shift ctrl RB # place cursor
+  add point		dbl LB			[*] ctrl RB # paint curve > add curve point and slide
+  draw (apply)   	enter , ctrl LB
+  select (set)	    	LB
+    extend (toggle)	  shift LB
+    none/all		  A ** , dbl A		[,+]
+  slide [rot+sca]	** ctrl RB		[*] shift RB
+    move		  RB			[-] G [-] drag LB
+  rotate		** shift RB		[*] R #* [view]:orientation
+  scale			** alt RB		[*] S
+  remove		ctrl X , backspace	[,*] delete
+
+[direction]
+  toggle [+/-]		** ctrl alt LB		[+]
 
 [falloff]
   preset		shift F			[+]
@@ -843,6 +853,7 @@ quick mask
     *fill area		  release ctrl
     *overflow/intersect	  E
     *geodesic type	  1-4
+    *move start point	  space
     expand (normal)	  shift ctrl Q 		[*] shift alt A # [sculpt.expand] falloff:[normal]
   ||
   grow			shift =			[+]
@@ -902,11 +913,12 @@ modifiers
 [tools]
   draw			1			[*] X # brush select
     draw sharp		  D			[+]
-    crease		  alt C			[*] shift C
+    crease [sharp+pinch]  alt C			[*] shift C
     curve		  shift alt C		{n}
   clay			2			[*] C
     clay strips		  C			[+]
   inflate		I
+  blob		  	** alt B		[+]
   layer			L
   ||
   smooth		shift 3			[*#] shift S # brush select [smooth] [v]:toggle [v]:create
@@ -919,7 +931,9 @@ modifiers
   grab			G	
     elastic		  alt E			[+]
     snake hook		  5			[*] K
+    nudge [flat grab]	  ** N			[+]
   pinch			P
+  thumb			** alt T		[+]
   ||
   transform (unmasked)	T
     scale		  dbl T			[+]
@@ -956,6 +970,14 @@ selection mask
   faces			1			[*] M # 3d->vertex/weight/image > [wm.context_toggle] context:[vertex_paint_object.data.use_paint_mask]
   vertexes		2			[*] V # 3d->vertex/weight > [wm.context_toggle] context:[vertex_paint_object.data.use_paint_mask_vertex]
 
+quick select
+  box		shift drag RB			[+]
+    subtract	  shift ctrl drag RB		[+]
+  circle	alt drag RB			[+]
+    subtract	  ctrl alt drag RB		[+]
+  lasso		shift alt drag RB		[+]
+    subtract	  shift ctrl alt drag RB	[+]
+
 select group		G			{n}
 
 [brush]
@@ -967,13 +989,13 @@ select group		G			{n}
   weight		alt W			[*] ctrl F # 3d->weight > [wm.radial_control] primary:[tool_settings.weight_paint.brush.weight]
   unified color		alt U			[+]
 
-[texture]
-  select (menu)		shift T			[+] 
-  angle (rotation)	alt R			[*] ctrl F [-] ctrl alt F
+[texture mask]
+  select (menu)		** T			[+] 
+    set image		  ++ ** alt T		{n}
 
 stencil texture
   move			drag RB			[*] RB [-] shift alt RB # stencil brush control [secondary]
-  scale			ctrl drag RB 		[*] shift RB [-] shift alt RB # stencil brush control [secondary]
+  scale			ctrl drag RB 	** alt drag RB	[*] shift RB [-] shift alt RB # stencil brush control [secondary]
   rotate		shift drag RB		[*] ctrl RB [-] ctrl alt RB # stencil brush control [secondary]
 
 [stroke]		LB
@@ -986,19 +1008,19 @@ stencil texture
     line (toggle)	  alt dbl LB		[+] 
     curve (toggle)	  shift alt LB		[+] 
 
-[falloff]
-  preset		shift F			[+] 
-
 [blend]
   mode			shift D			[+]
   eraser (toggle)	ctrl alt LB		[+]
 
+[falloff]
+  preset		shift F			[+] 
+
 [color]
-  sample		shift LB , shift dbl LB	[*,+] S ,
+  sample		shift LB , shift dbl LB	[*,+] S
     weight (tool)	  shift dbl LB		[+]
   ||
   swap			shift X			[*] X # swap colors
-  reset (hover)		alt backspace , alt X	[*,+] backspace # reset to default #
+  reset (hover)		alt backspace , alt X	[*,+] backspace # reset to default
   ||
   color palette		C 			{n}
 
@@ -1156,7 +1178,7 @@ quick select
 //
 // FILE BROWSER
 
-rename			ctrl R , alt enter	[*,+] F2 ,
+rename			ctrl R , alt enter	[*,+] F2
 make folder		shift ctrl M		[*] I # create new directory
 ||
 folder
@@ -1235,7 +1257,7 @@ frame (block)		dbl B			[*] ctrl J # node > join nodes [node.join]
   ||
   rename (label)	ctrl R , alt enter
 
-group			dbl G			[-] ctrl G
+group			dbl G ** , shift ctrl G	[*,+] ctrl G
   insert		  ctrl G		[+]
     separate		    alt G		[*] P # node > separate [node.group_separate]
   ungroup		  ctrl alt G

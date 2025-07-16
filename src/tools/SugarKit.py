@@ -378,19 +378,44 @@ class ModifierSetupRadialArrayOperator(bpy.types.Operator):
 
 
 # TODO: 3.2.x
-# SetupCurveArrayModifierOperator [shift alt C A]
-# * if only curve selected curve/s selected:
-#   - sample target object
-# * elif only target object selected:
-#   - draw curve in modal
-# when both curve/s and target object selected:
-# - CurveAppendToObjectWithModifiersOperator (parts 2 and 3)
-
-
-# TODO: 3.2.x
 # SetupGeoNodeModifierOperator [shift alt dbl G]
 # - ask to add geo node (list existing)
 # - add geo node modifier
+
+
+# TODO: 3.2.x
+# SetupCurveArrayModifierOperator [shift alt C A]
+# * if curve not selected or many selected target objects:
+#   - return
+# * if many curves selected:
+#   - join selected curves (to separete them alltogether later)
+# * if target object not selected:
+#   - sample target object
+# when both curve/s and target object selected:
+# - CurveAppendToObjectWithModifiersOperator
+
+
+# TODO: 3.2.x
+# CurveAppendToObjectWithModifiersOperator
+# - separete curve by loose splines
+# part 1:
+# - center target origin and active curve origin
+# - move target to active curve
+# - apply target scale and copy rotation from active curve
+# - parent active curve to target (and target to curve parent if parent exists)
+# part 2:
+# * if target already has array and curve mods:
+#   - delete array and curve mods
+# - add array modifier to target: set type to fit curve and curve to the parented curve
+# - add curve modifier to target: set curve to the parented curve
+# part 3:
+# * for each separated curve spline do parts 1-3:
+#   - duplicate parent target object (with linked data)
+#   - parent duplicated object to original target
+#   - set duplicated object as new target
+#   - execute parts 1 and 2 (change modifiers curve target)
+#
+# https://blenderartists.org/t/how-to-draw-an-object-selection-eyedropper-in-an-addon/1287437/8?u=nyamba
 
 
 # / Outliner Select Grouped
@@ -614,28 +639,6 @@ class CurveToggleFillCapsOperator(bpy.types.Operator):
 # CurveSeparateByLooseSplines [shift alt J]
 
 
-# TODO: 3.2.x
-# CurveAppendToObjectWithModifiersOperator [shift alt A]
-# part 1:
-# - sample target with eyedropper (if not)
-# - center target origin and curve origin
-# - move target to curve
-# - apply target scale and copy rotation from curve
-# - parent curve to target (and target to curve parent if parent exists)
-# part 2:
-# - add/change array modifier to target - set type to fit curve and curve to the parented curve
-# - add/change curve modifier to target - set curve to the parented curve
-# part 3:
-# - separete curve by loose splines
-# * for each separated curve spline:
-#   - duplicate parent target object (with linked data)
-#   - parent duplicated object to original target
-#   - set duplicated object as new target
-#   - execute parts 1 and 2 (change modifiers curve target)
-#
-# https://blenderartists.org/t/how-to-draw-an-object-selection-eyedropper-in-an-addon/1287437/8?u=nyamba
-
-
 # / Brush Tools
 
 
@@ -664,14 +667,6 @@ class BrushTextureImageSetMenu(bpy.types.Menu):
         layout = self.layout
         layout.template_ID(
             context.scene, "nym_active_brush_texture_image", new="image.new", open="image.open")
-
-
-# TODO: 3.3.x
-# BrushStrokeDragLineModalOperator (sculpt/vertex/weight/image) [alt LB]              *switch mode + reassign event.alt default behaviour (replace with ctrl)
-# BrushStrokeDragSmoothStrokeModalOperator (vertex/weight +image) [shift ctrl LB]     *activate smooth + for 3d->image add [paint.image_paint] stroke:[smooth]
-# BrushStrokeDragSoftenBlurModalOperator (image +vertex/weight) [shift RB]            *switch tool + for 3d->vertex/weight add [paint.VERTEX/WEIGHT_paint] stroke:[smooth]
-# BrushStrokeDragImageEraserModalOperator (image) [ctrl alt LB]                       *switch type
-# BrushStrokeDragWeightSampleModalOperator (weight) [shift LB]                        *switch tool
 
 
 # / Sculpt Tools
@@ -1258,100 +1253,6 @@ class SculptSymmetrizeWeldPanel(bpy.types.Panel):
 # / Paint Tools
 
 
-class PaintTool_SelectOverriderOperator(bpy.types.Operator):
-    bl_label = "Paint Tool: Select (Overrider)"
-    bl_idname = "paint.nym_paint_tool_select_overrider"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        global glob
-        return isToolSelect(glob.workspaceActiveToolName)
-
-    def invoke(self, context, event):
-        self.eventCtrl = event.ctrl
-        return self.execute(context)
-
-    def execute(self, context):
-        global glob
-        tool = glob.workspaceActiveToolName
-        if tool in ['builtin.select_box', 'builtin.select_lasso']:
-            bpy.ops.view3d.select(
-                'INVOKE_DEFAULT', extend=not self.eventCtrl, deselect=self.eventCtrl)
-        mode = 'ADD' if not self.eventCtrl else 'SUB'
-        if tool in ['builtin.select', 'builtin.select_box']:
-            bpy.ops.view3d.select_box('INVOKE_DEFAULT', mode=mode)
-        elif tool == 'builtin.select_circle':
-            bpy.ops.view3d.select_circle('INVOKE_DEFAULT', mode=mode)
-        elif tool == 'builtin.select_lasso':
-            bpy.ops.view3d.select_lasso('INVOKE_DEFAULT', mode=mode)
-        return {'FINISHED'}
-
-
-class PaintTool_SelectBoxOverriderOperator(bpy.types.Operator):
-    bl_label = "Paint Tool: Select Box (Overrider)"
-    bl_idname = "paint.nym_paint_tool_select_box_overrider"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        global glob
-        return isToolSelect(glob.workspaceActiveToolName)
-
-    def invoke(self, context, event):
-        self.eventCtrl = event.ctrl
-        return self.execute(context)
-
-    def execute(self, context):
-        bpy.ops.view3d.select(
-            'INVOKE_DEFAULT', extend=not self.eventCtrl, deselect=self.eventCtrl)
-        mode = 'ADD' if not self.eventCtrl else 'SUB'
-        bpy.ops.view3d.select_box('INVOKE_DEFAULT', mode=mode)
-        return {'FINISHED'}
-
-
-class PaintTool_SelectCircleOverriderOperator(bpy.types.Operator):
-    bl_label = "Paint Tool: Select Circle (Overrider)"
-    bl_idname = "paint.nym_paint_tool_select_circle_overrider"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        global glob
-        return isToolSelect(glob.workspaceActiveToolName)
-
-    def invoke(self, context, event):
-        self.eventCtrl = event.ctrl
-        return self.execute(context)
-
-    def execute(self, context):
-        mode = 'ADD' if not self.eventCtrl else 'SUB'
-        bpy.ops.view3d.select_circle('INVOKE_DEFAULT', mode=mode)
-        return {'FINISHED'}
-
-
-class PaintTool_SelectLassoOverriderOperator(bpy.types.Operator):
-    bl_label = "Paint Tool: Select Lasso (Overrider)"
-    bl_idname = "paint.nym_paint_tool_select_lasso_overrider"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        global glob
-        return isToolSelect(glob.workspaceActiveToolName)
-
-    def invoke(self, context, event):
-        self.eventCtrl = event.ctrl
-        return self.execute(context)
-
-    def execute(self, context):
-        bpy.ops.view3d.select(
-            'INVOKE_DEFAULT', extend=not self.eventCtrl, deselect=self.eventCtrl)
-        mode = 'ADD' if not self.eventCtrl else 'SUB'
-        bpy.ops.view3d.select_lasso('INVOKE_DEFAULT', mode=mode)
-        return {'FINISHED'}
-
-
 class PaintGradientSettingsPanelOperator(bpy.types.Operator):
     bl_label = "Paint Gradient Settings Panel"
     bl_idname = "paint.nym_paint_gradient_panel"
@@ -1697,7 +1598,7 @@ class PaintMaskImageInvertOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# / Resources
+# / Resources: Image, Shader
 
 
 # Pack

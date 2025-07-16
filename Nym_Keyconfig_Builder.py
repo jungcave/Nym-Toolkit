@@ -1,13 +1,13 @@
 import bpy
-from bpy.app.handlers import persistent
 import math
 from .src.tools.SugarKit_helpers import C, CD, CL
 from .src.tools.SugarKit_helpers import (
     restoreDefaultKeymaps,
     buildNewActiveKeyconfig,
     disableMacOsKeyBindingsInKeyconfig,
-    addAddonKeymapItem,
-    removeAllInactiveKeymapItemsInKeyconfig,
+    editUserKeymapItem,
+    addUserKeymapItem,
+    clearAllInactiveKeymapItemsInKeyconfig,
     saveAndExportKeyconfig,
 )
 from .src.tools.SugarKit_helpers import addActiveKeymapItem as add
@@ -29,7 +29,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         restoreDefaultKeymaps()
         nkc = buildNewActiveKeyconfig('Nym Keyconfig')
         disableMacOsKeyBindingsInKeyconfig(
-            nkc, excludes=['cmd A', 'cmd S', 'cmd D', 'cmd Z', 'shift cmd Z', 'cmd X', 'cmd C'])
+            nkc, excludes=['cmd A', 'cmd S', 'cmd D', 'cmd Z', 'shift cmd Z', 'cmd X', 'cmd C', 'cmd V'])
 
         # INTERFACE
         self.addInterfaceHotkeys()
@@ -60,8 +60,14 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         # SHADER
         self.addShaderHotkeys()
 
-        removeAllInactiveKeymapItemsInKeyconfig(nkc)
-        saveAndExportKeyconfig('Nym_Keyconfig.py')
+        clearAllInactiveKeymapItemsInKeyconfig(nkc)
+
+        # ADDONS {b}
+        bpy.app.timers.register(
+            lambda: self.editOuterAddonsHotkeys(self), first_interval=0.1)  # must run async to prevent user kyconf collision with clearAllInactiveKeymapItemsInKeyconfig \
+
+        bpy.app.timers.register(
+            lambda: saveAndExportKeyconfig('Nym_Keyconfig.py'), first_interval=0.2)  # must run async to properly cache changes after editOuterAddonsHotkeys and clearAllInactiveKeymapItemsInKeyconfig \
 
         return {'FINISHED'}
 
@@ -459,25 +465,25 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         disable('*', '*.select_circle', 'C')
         disable('*', '*.select_lasso', 'RIGHTMOUSE ctrl CLICK_DRAG')
         disable('*', '*.select_lasso', 'RIGHTMOUSE shift ctrl CLICK_DRAG')
-
-        add('3D View', 'view3d.select_box',
-            'LEFTMOUSE CLICK_DRAG')
-        add('3D View', 'view3d.select_box',
-            'LEFTMOUSE shift CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
-        add('3D View', 'view3d.select_box',
-            'LEFTMOUSE shift ctrl CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
-        add('3D View', 'view3d.select_circle',
-            'LEFTMOUSE alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
-        add('3D View', 'view3d.select_circle',
-            'LEFTMOUSE ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
+        for kmn in ['Object Mode', 'Mesh', 'Curve']:
+            add(kmn, 'view3d.select_box',
+                'LEFTMOUSE CLICK_DRAG')
+            add(kmn, 'view3d.select_box',
+                'LEFTMOUSE shift CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
+            add(kmn, 'view3d.select_box',
+                'LEFTMOUSE shift ctrl CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
+            add(kmn, 'view3d.select_circle',
+                'LEFTMOUSE alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
+            add(kmn, 'view3d.select_circle',
+                'LEFTMOUSE ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
+            add(kmn, 'view3d.select_lasso',
+                'LEFTMOUSE shift alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
+            add(kmn, 'view3d.select_lasso',
+                'LEFTMOUSE shift ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
         add('View3D Gesture Circle', 'SUBTRACT', 'LEFT_BRACKET alt')
         add('View3D Gesture Circle', 'SUBTRACT', 'LEFT_BRACKET ctrl alt')
         add('View3D Gesture Circle', 'ADD', 'RIGHT_BRACKET alt')
         add('View3D Gesture Circle', 'ADD', 'RIGHT_BRACKET ctrl alt')
-        add('3D View', 'view3d.select_lasso',
-            'LEFTMOUSE shift alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
-        add('3D View', 'view3d.select_lasso',
-            'LEFTMOUSE shift ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
 
         # select tools
         for kmn, v in {
@@ -592,14 +598,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
                 'R ctrl', disableOld='F2')
             add(kmn, {'wm.call_panel': {'name': v, 'keep_open': False}},
                 'RET alt')
-
-        # copy attrs {b}
-        for kmn, v in {
-            'Pose': 'VIEW3D_MT_posecopypopup',
-            'Object Mode': 'VIEW3D_MT_copypopup'
-        }.items():
-            addAddonKeymapItem(kmn, {'wm.call_menu': {'name': v}},
-                               'C shift', disableOld='C ctrl')
 
         for kmn, v in {
             'Property Editor': 'constraint.copy',
@@ -782,7 +780,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Outliner', {'outliner.item_activate': {'extend': True, 'deselect_all': True}},
             'LEFTMOUSE shift CLICK', disableOld='LEFTMOUSE ctrl CLICK')
         add('Outliner', {'outliner.item_activate': {'extend_range': True, 'deselect_all': True}},
-            'LEFTMOUSE ctrl CLICK', disableOldExactOpts='LEFTMOUSE shift CLICK')
+            'LEFTMOUSE ctrl CLICK', disableOldExactProps='LEFTMOUSE shift CLICK')
 
         add('Outliner', 'outliner.select_all',
             'A DOUBLE_CLICK', disableOld='A', setKmiProps=lambda kmi: setActionProp(kmi, 'SELECT'))
@@ -849,7 +847,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
 
         # move
         for kmn in [
-            'Markers', 'Grease Pencil Stroke Edit Mode', 'Paint Curve',
+            'Markers', 'Grease Pencil Stroke Edit Mode',
             '3D View', 'UV Editor', 'Mask Editing',
             'Graph Editor', 'Node Editor', 'SequencerPreview',
             'Clip Editor', 'Clip Graph Editor'
@@ -978,18 +976,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         }.items():
             add('Object Mode', 'object.modifier_add',
                 k + ' shift alt', setKmiProps=lambda kmi: setTypeProp(kmi, modType))
-
-        # bool tool {b}
-        add('Object Mode', {'wm.call_menu': {'name': 'VIEW3D_MT_booltool_menu'}},
-            'B shift alt T', disableOld='B shift ctrl')
-        add('Object Mode', 'object.booltool_auto_difference',
-            'MINUS shift alt DOUBLE_CLICK', disableOld='NUMPAD_MINUS shift ctrl')
-        add('Object Mode', 'object.booltool_auto_union',
-            'EQUAL shift alt DOUBLE_CLICK', disableOld='NUMPAD_PLUS shift ctrl')
-        add('Object Mode', 'object.booltool_auto_intersect',
-            'EIGHT shift alt DOUBLE_CLICK', disableOld='NUMPAD_ASTERIX shift ctrl')
-        add('Object Mode', 'object.booltool_auto_slice',
-            'SLASH shift alt DOUBLE_CLICK', disableOld='NUMPAD_SLASH shift ctrl')
 
         for kmn in ['Object Mode', 'Sculpt']:
             for i, n in enumerate(NUMBERS_IDX):
@@ -1297,9 +1283,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Mesh', 'mesh.vertices_smooth', 'S shift alt')
         add('Mesh', 'transform.edge_crease', 'C alt', disableOld='E shift')
 
-        # f2 {b}
-        addAddonKeymapItem('Mesh', 'mesh.f2', 'F alt', disableOld='F')
-
         # tools
         add('Mesh', {'wm.tool_set_by_id': {'name': 'builtin.spin'}},
             'T alt')
@@ -1534,8 +1517,11 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             add(kmn, {'wm.context_menu_enum': {'data_path': 'tool_settings.' + v + '.brush.curve_preset'}},
                 'F shift')
 
+        # paint curve
         add('Paint Curve', 'paintcurve.add_point_slide',
             'LEFTMOUSE DOUBLE_CLICK', disableOld='RIGHTMOUSE ctrl')
+        disable('Paint Curve', 'transform.translate', 'G')
+        disable('Paint Curve', 'transform.translate', 'LEFTMOUSE CLICK_DRAG')
 
         # dyntopo
         add('Sculpt', 'sculpt.dyntopo_detail_size_edit', 'D shift', disableOld='R')
@@ -1714,6 +1700,21 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             if kmn != 'Image Paint':
                 add(kmn, {'wm.context_toggle': {'data_path': v + '_paint_object.data.use_paint_mask_vertex'}},
                     'TWO', disableOld='V')
+
+        # quick select
+        for kmn in ['Vertex Selection (Weight, Vertex)', 'Face Mask (Weight, Vertex, Texture)']:
+            add('Paint ' + kmn, 'view3d.select_box',
+                'RIGHTMOUSE shift CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
+            add('Paint ' + kmn, 'view3d.select_box',
+                'RIGHTMOUSE shift ctrl CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
+            add('Paint ' + kmn, 'view3d.select_circle',
+                'RIGHTMOUSE alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
+            add('Paint ' + kmn, 'view3d.select_circle',
+                'RIGHTMOUSE ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
+            add('Paint ' + kmn, 'view3d.select_lasso',
+                'RIGHTMOUSE shift alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'ADD'))
+            add('Paint ' + kmn, 'view3d.select_lasso',
+                'RIGHTMOUSE shift ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
 
         # size/strenth effect
         for kmn, v in {
@@ -2087,51 +2088,82 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Node Editor', {'node.backimage_zoom': {'factor': 1.2}},
             'MINUS', disableOld='V alt')
 
+    @classmethod
+    def editOuterAddonsHotkeys(cls):
+        # copy attrs {b}
+        if 'space_view3d_copy_attributes' in bpy.context.preferences.addons:
+            for kmn, v in {
+                'Pose': 'VIEW3D_MT_posecopypopup',
+                'Object Mode': 'VIEW3D_MT_copypopup'
+            }.items():
+                editUserKeymapItem(kmn, {'wm.call_menu': {'name': v}},
+                                   'C shift', oldHotkey='C ctrl')
+
+        # bool tool {b}
+        if 'object_boolean_tools' in bpy.context.preferences.addons:
+            editUserKeymapItem('Object Mode', {'wm.call_menu': {'name': 'VIEW3D_MT_booltool_menu'}},
+                               'B shift alt T', oldHotkey='B shift ctrl')
+            editUserKeymapItem('Object Mode', 'object.booltool_auto_difference',
+                               'MINUS shift alt DOUBLE_CLICK', oldHotkey='NUMPAD_MINUS shift ctrl')
+            editUserKeymapItem('Object Mode', 'object.booltool_auto_union',
+                               'EQUAL shift alt DOUBLE_CLICK', oldHotkey='NUMPAD_PLUS shift ctrl')
+            editUserKeymapItem('Object Mode', 'object.booltool_auto_intersect',
+                               'EIGHT shift alt DOUBLE_CLICK', oldHotkey='NUMPAD_ASTERIX shift ctrl')
+            editUserKeymapItem('Object Mode', 'object.booltool_auto_slice',
+                               'SLASH shift alt DOUBLE_CLICK', oldHotkey='NUMPAD_SLASH shift ctrl')
+
+        # f2 {b}
+        if 'mesh_f2' in bpy.context.preferences.addons:
+            editUserKeymapItem('Mesh', 'mesh.f2', 'F alt', oldHotkey='F')
+
         # node wrangler {b}
-        addAddonKeymapItem('Node Editor', {'node.nw_preview_node': {'run_in_geometry_nodes': False}},
-                           'RIGHTMOUSE ctrl CLICK', disableOld='LEFTMOUSE shift ctrl')
-        addAddonKeymapItem('Node Editor', {'node.nw_preview_node': {'run_in_geometry_nodes': True}},
-                           'RIGHTMOUSE shift ctrl CLICK', disableOld='LEFTMOUSE shift alt')
-        addAddonKeymapItem('Node Editor', 'node.nw_link_out',
-                           'V DOUBLE_CLICK', disableOld='O')
-        addAddonKeymapItem('Node Editor', 'node.nw_link_out',
-                           'RET shift')
-        addAddonKeymapItem('Node Editor', {'wm.call_menu': {'name': 'NODE_MT_nw_switch_node_type_menu'}},
-                           'S alt', disableOld='S shift')
-        addAddonKeymapItem('Node Editor', {'node.nw_lazy_connect': {'with_menu': False}},
-                           'RIGHTMOUSE shift CLICK_DRAG', disableOld='RIGHTMOUSE alt')
-        addAddonKeymapItem('Node Editor', {'node.nw_lazy_connect': {'with_menu': True}},
-                           'RIGHTMOUSE ctrl CLICK_DRAG', disableOld='RIGHTMOUSE shift alt')
-        addAddonKeymapItem('Node Editor', 'node.nw_lazy_mix',
-                           'RIGHTMOUSE shift ctrl CLICK_DRAG', disableOld='RIGHTMOUSE shift ctrl')
-        addAddonKeymapItem('Node Editor', {'wm.call_menu': {'name': 'NODE_MT_nw_link_active_to_selected_menu'}},
-                           'C shift ctrl', disableOld='BACK_SLASH')
-        addAddonKeymapItem('Node Editor', {'node.nw_link_active_to_selected': {'replace': True, 'use_outputs_names': False, 'use_node_names': False}},
-                           'C alt', disableOld='K shift')
-        addAddonKeymapItem('Node Editor', {'node.nw_link_active_to_selected': {'replace': False, 'use_outputs_names': False, 'use_node_names': False}},
-                           'C alt', disableOld='K')
-        addAddonKeymapItem('Node Editor', 'node.nw_detach_outputs',
-                           'D alt', disableOld='D shift alt')
-        addAddonKeymapItem('Node Editor', 'node.nw_del_unused',
-                           'X shift alt', disableOld='X alt')
-        addAddonKeymapItem('Node Editor', 'node.nw_align_nodes',
-                           'A shift ctrl', disableOld='EQUAL shift')
-        addAddonKeymapItem('Node Editor', 'node.nw_reload_images',
-                           'R shift ctrl alt', disableOld='R alt')
-        addAddonKeymapItem('Node Editor', 'node.nw_reset_nodes',
-                           'R alt', disableOld='BACK_SPACE')
-        addAddonKeymapItem('Node Editor', 'node.nw_bg_reset',
-                           'Z alt', disableOld='Z')
-        addAddonKeymapItem('Node Editor', {'wm.call_menu': {'name': 'NODE_MT_nw_copy_node_properties_menu'}},
-                           'C shift alt', disableOld='C shift')
-        addAddonKeymapItem('Node Editor', 'node.nw_frame_selected',
-                           'B shift ctrl', disableOld='P shift')
-        addAddonKeymapItem('Node Editor', 'node.nw_copy_label',
-                           'L', disableOld='V shift')
-        addAddonKeymapItem('Node Editor', 'node.nw_clear_label',
-                           'L alt', disableOld='L alt')
-        addAddonKeymapItem('Node Editor', 'node.nw_modify_labels',
-                           'L shift ctrl', disableOld='L shift alt')
+        if 'node_wrangler' in bpy.context.preferences.addons:
+            editUserKeymapItem('Node Editor', {'node.nw_preview_node': {'run_in_geometry_nodes': False}},
+                               'RIGHTMOUSE ctrl CLICK', oldHotkey='LEFTMOUSE shift ctrl')
+            editUserKeymapItem('Node Editor', {'node.nw_preview_node': {'run_in_geometry_nodes': True}},
+                               'RIGHTMOUSE shift ctrl CLICK', oldHotkey='LEFTMOUSE shift alt')
+            editUserKeymapItem('Node Editor', 'node.nw_link_out',
+                               'V DOUBLE_CLICK', oldHotkey='O')
+
+            addUserKeymapItem('Node Editor', 'node.nw_link_out',
+                              'RET shift')
+
+            editUserKeymapItem('Node Editor', {'wm.call_menu': {'name': 'NODE_MT_nw_switch_node_type_menu'}},
+                               'S alt', oldHotkey='S shift')
+            editUserKeymapItem('Node Editor', {'node.nw_lazy_connect': {'with_menu': False}},
+                               'RIGHTMOUSE shift CLICK_DRAG', oldHotkey='RIGHTMOUSE alt')
+            editUserKeymapItem('Node Editor', {'node.nw_lazy_connect': {'with_menu': True}},
+                               'RIGHTMOUSE ctrl CLICK_DRAG', oldHotkey='RIGHTMOUSE shift alt')
+            editUserKeymapItem('Node Editor', 'node.nw_lazy_mix',
+                               'RIGHTMOUSE shift ctrl CLICK_DRAG', oldHotkey='RIGHTMOUSE shift ctrl')
+            editUserKeymapItem('Node Editor', {'wm.call_menu': {'name': 'NODE_MT_nw_link_active_to_selected_menu'}},
+                               'C shift ctrl', oldHotkey='BACK_SLASH')
+            editUserKeymapItem('Node Editor', {'node.nw_link_active_to_selected': {'replace': True, 'use_outputs_names': False, 'use_node_names': False}},
+                               'C alt', oldHotkey='K shift')
+            editUserKeymapItem('Node Editor', {'node.nw_link_active_to_selected': {'replace': False, 'use_outputs_names': False, 'use_node_names': False}},
+                               'C alt DOUBLE_CLICK', oldHotkey='K')
+            editUserKeymapItem('Node Editor', 'node.nw_detach_outputs',
+                               'D alt', oldHotkey='D shift alt')
+            editUserKeymapItem('Node Editor', 'node.nw_del_unused',
+                               'X shift alt', oldHotkey='X alt')
+            editUserKeymapItem('Node Editor', 'node.nw_align_nodes',
+                               'A shift ctrl', oldHotkey='EQUAL shift')
+            editUserKeymapItem('Node Editor', 'node.nw_reload_images',
+                               'R shift ctrl alt', oldHotkey='R alt')
+            editUserKeymapItem('Node Editor', 'node.nw_reset_nodes',
+                               'R alt', oldHotkey='BACK_SPACE')
+            editUserKeymapItem('Node Editor', 'node.nw_bg_reset',
+                               'Z alt', oldHotkey='Z')
+            editUserKeymapItem('Node Editor', {'wm.call_menu': {'name': 'NODE_MT_nw_copy_node_properties_menu'}},
+                               'C shift alt', oldHotkey='C shift')
+            editUserKeymapItem('Node Editor', 'node.nw_frame_selected',
+                               'B shift ctrl', oldHotkey='P shift')
+            editUserKeymapItem('Node Editor', 'node.nw_copy_label',
+                               'L', oldHotkey='V shift')
+            editUserKeymapItem('Node Editor', 'node.nw_clear_label',
+                               'L alt', oldHotkey='L alt')
+            editUserKeymapItem('Node Editor', 'node.nw_modify_labels',
+                               'L shift ctrl', oldHotkey='L shift alt')
 
 
 # KMI PROPS SETTERS

@@ -19,7 +19,8 @@ def Menus(isRegister):
 # / View 3d
 
 
-# MeshModesContextMenu based on the asnwer from https://blenderartists.org/t/context-sensitive-menu-in-blender/515689/8
+# MeshModesContextMenu based on the asnwer from
+# https://blenderartists.org/t/context-sensitive-menu-in-blender/515689/8
 class MeshModesContextMenu(bpy.types.Menu):
     bl_label = "Context Mode"
     bl_idname = "OBJECT_MT_simple_custom_menu"
@@ -61,7 +62,8 @@ class MeshModesContextMenu(bpy.types.Menu):
 # UpStackOverlapOperator [shift ctrl L]
 
 
-# UVRectifier based on Reslav Hollos's addon UV Squares from https://blendermarket.com/products/uv-squares
+# UVRectifier based on Reslav Hollos's addon UV Squares from
+# https://blendermarket.com/products/uv-squares
 class UVRectifierOperator(bpy.types.Operator):
     """Reshapes UV faces to a grid with respect to shape by length of edges around selected corner"""
     bl_label = "Rectyfy UV"
