@@ -744,6 +744,22 @@ def setActiveBrushTextureImageInContext(context, image):
         pass
 
 
+def getActiveBrushMaskTextureInContext(context):
+    try:
+        if context.mode == 'PAINT_TEXTURE':
+            return context.tool_settings.image_paint.brush.mask_texture
+    except Exception as er:
+        return None
+
+
+def setActiveBrushMaskTextureImageInContext(context, image):
+    try:
+        if context.mode == 'PAINT_TEXTURE':
+            context.tool_settings.image_paint.brush.mask_texture.image = image
+    except Exception as er:
+        pass
+
+
 def createUvTransformer(angle, origin=(0, 0), offset=(0, 0), scale=(1, 1)):
     cos_theta, sin_theta = math.cos(angle), math.sin(angle)
     x0, y0 = origin

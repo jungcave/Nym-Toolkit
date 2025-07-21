@@ -707,13 +707,10 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         # linked
         add('Object Mode', 'object.select_linked',
             'LEFT_SHIFT alt DOUBLE_CLICK')
-
         add('Object Mode', 'object.select_linked',
             'S shift', setKmiProps=lambda kmi: setTypeProp(kmi, 'OBDATA'))
-
         add('Object Mode', 'object.select_linked',
             'M shift', setKmiProps=lambda kmi: setTypeProp(kmi, 'MATERIAL'))
-
         add('Object Mode', {'object.make_single_user': {'object': True, 'obdata': True}},
             'L alt')
         add('Object Mode', {'object.make_single_user': {'material': True}},
@@ -781,7 +778,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'LEFTMOUSE shift CLICK', disableOld='LEFTMOUSE ctrl CLICK')
         add('Outliner', {'outliner.item_activate': {'extend_range': True, 'deselect_all': True}},
             'LEFTMOUSE ctrl CLICK', disableOldExactProps='LEFTMOUSE shift CLICK')
-
         add('Outliner', 'outliner.select_all',
             'A DOUBLE_CLICK', disableOld='A', setKmiProps=lambda kmi: setActionProp(kmi, 'SELECT'))
         add('Outliner', 'outliner.select_all',
@@ -790,9 +786,12 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'A alt', disableOld='I ctrl', setKmiProps=lambda kmi: setActionProp(kmi, 'INVERT'))
         disable('Outliner', {'outliner.select_all': {'action': 2}},
                 'A DOUBLE_CLICK')
-
         add('Outliner', 'outliner.collection_objects_select',
             'G')
+        add('Outliner', {'object.select_grouped': {'extend': True}},
+            'D shift DOUBLE_CLICK', setKmiProps=lambda kmi: setTypeProp(kmi, 'CHILDREN_RECURSIVE'))
+        add('Outliner', {'object.select_grouped': {'extend': True}},
+            'D shift', setKmiProps=lambda kmi: setTypeProp(kmi, 'PARENT'))
 
         # object
         add('Outliner', 'object.duplicate',
@@ -1107,7 +1106,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
                 add(kmn, v + m,
                     ('MINUS' if m == 'less' else 'EQUAL') + ' shift',
                     disableOld=('NUMPAD_MINUS' if m == 'less' else 'NUMPAD_PLUS') + ' ctrl')
-
         add('Mesh', 'mesh.select_prev_item', 'MINUS shift alt',
             disableOld='NUMPAD_MINUS shift ctrl')
         add('Mesh', 'mesh.select_next_item', 'EQUAL shift alt',
@@ -1133,6 +1131,23 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             add(kmn, v, 'L DOUBLE_CLICK', disableOld='L shift')
 
         for kmn, v in {
+            'Grease Pencil Stroke Edit Mode': 'gpencil.select_linked',
+            'Grease Pencil Stroke Sculpt Mode': 'gpencil.select_linked',
+            'Grease Pencil Stroke Vertex Mode': 'gpencil.select_linked',
+            'Paint Face Mask (Weight, Vertex, Texture)': 'paint.face_select_linked',
+            'Paint Vertex Selection (Weight, Vertex)': 'paint.vert_select_linked',
+            'Curve': 'curve.select_linked',
+            'Curves': 'curves.select_linked',
+            'Mesh': 'mesh.select_linked',
+            'Armature': 'armature.select_linked',
+            'Particle': 'particle.select_linked',
+            'UV Editor': 'uv.select_linked',
+            'Mask Editing': 'mask.select_linked',
+            'Sequencer': 'sequencer.select_linked'
+        }.items():
+            add(kmn, v, 'L shift', disableOldExactProps='L ctrl')
+
+        for kmn, v in {
             'Mesh': 'mesh.select_linked',
             'Curve': 'curve.select_linked',
             'Paint Face Mask (Weight, Vertex, Texture)': 'paint.face_select_linked',
@@ -1141,14 +1156,13 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             add(kmn, v, 'LEFT_SHIFT alt DOUBLE_CLICK')
 
         # mesh
-        add('3D View', 'mesh.select_linked',
-            'M shift', setKmiProps=lambda kmi: setDelimitProp(kmi, 'MATERIAL'))
         for kmn, v in {
             'Mesh': 'VIEW3D_MT_edit_mesh_merge',
             'UV Editor': 'IMAGE_MT_uvs_merge'
         }.items():
             add(kmn, {'wm.call_menu': {'name': v}},
                 'M shift', disableOld='M')
+
         for k, v in {
             'M': 'LAST',
             'M ctrl': 'CENTER',
@@ -1244,8 +1258,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'RIGHTMOUSE alt CLICK', disableOld='RIGHTMOUSE ctrl CLICK')
         add('Mesh', {'mesh.dupli_extrude_cursor': {'rotate_source': False}},
             'RIGHTMOUSE ctrl alt CLICK', disableOld='RIGHTMOUSE shift ctrl CLICK')
-        add('Curve', 'curve.vertex_add',
-            'RIGHTMOUSE alt CLICK', disableOld='RIGHTMOUSE ctrl CLICK')
 
         add('Mesh', {'wm.call_menu': {'name': 'VIEW3D_MT_edit_mesh_extrude'}},
             'E ctrl', disableOld='E alt')
@@ -1280,7 +1292,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         for kmn in ['Grease Pencil Stroke Edit Mode', '3D View', 'UV Editor', 'Mask Editing']:
             add(kmn, 'transform.shear', 'R alt', disableOld='S shift ctrl alt')
 
-        add('Mesh', 'mesh.vertices_smooth', 'S shift alt')
+        add('Mesh', {'mesh.vertices_smooth': {'factor': 0.5, 'wait_for_input': False}},
+            'S shift alt')
         add('Mesh', 'transform.edge_crease', 'C alt', disableOld='E shift')
 
         # tools
@@ -1335,12 +1348,15 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
     def addCurvesHotkeys(cls):
         # quick transforms
         add('Curve', 'transform.rotate', 'RIGHTMOUSE shift CLICK_DRAG')
-        add('Curve', 'transform.resize', 'RIGHTMOUSE ctrl CLICK_DRAG')
+        add('Curve', 'transform.resize', 'RIGHTMOUSE alt CLICK_DRAG')
 
         # curve
         add('Curve', 'curve.spline_type_set', 'T shift ctrl')
         add('Curve', 'curve.spline_type_set',
             'B shift ctrl', setKmiProps=lambda kmi: setTypeProp(kmi, 'BEZIER'))
+        add('Curve', 'curve.vertex_add',
+            'RIGHTMOUSE alt CLICK', disableOld='RIGHTMOUSE ctrl CLICK')
+
         for kmn, v in {
             'Curve': 'curve.cyclic_toggle',
             'Mask Editing': 'mask.cyclic_toggle'
@@ -1410,6 +1426,10 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
 
     @classmethod
     def addSculptHotkeys(cls):
+        # direction
+        add('Sculpt', {'wm.context_toggle_enum': {'data_path': 'tool_settings.sculpt.brush.direction'}},
+            'LEFTMOUSE ctrl alt', setKmiProps=lambda kmi: setContextToggleValues(kmi, 'ADD', 'SUBTRACT'))
+
         # brush
         for kmn, v in {
             'Sculpt': 'VIEW3D_PT_sculpt_context_menu',
@@ -1422,7 +1442,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             add(kmn, {'wm.call_panel': {'name': 'VIEW3D_PT_tools_brush_select'}},
                 'B shift')
 
-        # size/strenth effect
         for kmn, v in {
             'Sculpt': 'tool_settings.sculpt.brush',
             'Sculpt Curves': 'tool_settings.curves_sculpt.brush',
@@ -1465,10 +1484,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
                 add(kmn, {'wm.radial_control': {'data_path_primary': v + cmd}},
                     'E', disableOld='F shift')
 
-        # softness
         add('Sculpt', {'wm.radial_control': {'data_path_primary': 'tool_settings.sculpt.brush.hardness'}},
             'S alt')
-        # units
         add('Sculpt', {'wm.context_toggle_enum': {'data_path': 'scene.tool_settings.unified_paint_settings.use_locked_size'}},
             'U DOUBLE_CLICK', setKmiProps=lambda kmi: setContextToggleValues(kmi, 'VIEW', 'SCENE'))
 
@@ -1480,7 +1497,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         }.items():
             add(kmn, {'wm.call_panel': {'name': 'VIEW3D_PT_tools_brush_texture'}},
                 'T shift')
-            # Angle (rotation)
             add(kmn, {'wm.radial_control': {
                 'data_path_primary': v + '.texture_slot.angle',
                 'rotation_path': v + '.texture_slot.angle',
@@ -1489,7 +1505,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
                 'fill_color_override_path': '' if kmn == 'Sculpt' else 'tool_settings.unified_paint_settings.color',
                 'fill_color_override_test_path': '' if kmn == 'Sculpt' else 'tool_settings.unified_paint_settings.use_unified_color',
                 'image_id': v}},
-                'R alt', disableOld='F ctrl')
+                'R', disableOld='F ctrl')
 
         # stroke
         for kmn, v in {
@@ -1498,30 +1514,38 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'Vertex Paint': 'vertex_paint',
             'Image Paint': 'image_paint'
         }.items():
+            add(kmn, {'wm.call_panel': {'name': 'VIEW3D_PT_tools_brush_stroke'}},
+                'S shift')
+            # method
+            disable(kmn, {'wm.context_menu_enum': {
+                    'data_path': 'tool_settings.' + v + '.brush.stroke_method'}}, 'E')
+            # line
+            add(kmn, {'wm.context_toggle_enum': {'data_path': 'tool_settings.' + v + '.brush.stroke_method'}},
+                'LEFTMOUSE alt DOUBLE_CLICK', setKmiProps=lambda kmi: setContextToggleValues(kmi, 'LINE', 'SPACE'))
+            # curve
+            add(kmn, {'wm.context_toggle_enum': {'data_path': 'tool_settings.' + v + '.brush.stroke_method'}},
+                'LEFTMOUSE shift alt', setKmiProps=lambda kmi: setContextToggleValues(kmi, 'CURVE', 'SPACE'))
             # smooth
             add(kmn, {'wm.context_toggle': {'data_path': 'tool_settings.' + v + '.brush.use_smooth_stroke'}},
                 'LEFTMOUSE shift ctrl', disableOld='S shift')
-            # smooth radius
-            add(kmn, {'wm.radial_control': {'data_path_primary': 'tool_settings.' + v + '.brush.smooth_stroke_factor'}},
-                'R')
-            # method
-            add(kmn, {'wm.context_menu_enum': {'data_path': 'tool_settings.' + v + '.brush.stroke_method'}},
-                'S shift', disableOld='E')
-            # method line
-            add(kmn, {'wm.context_toggle_enum': {'data_path': 'tool_settings.' + v + '.brush.stroke_method'}},
-                'LEFTMOUSE alt DOUBLE_CLICK', setKmiProps=lambda kmi: setContextToggleValues(kmi, 'LINE', 'SPACE'))
-            # method curve
-            add(kmn, {'wm.context_toggle_enum': {'data_path': 'tool_settings.' + v + '.brush.stroke_method'}},
-                'LEFTMOUSE shift alt', setKmiProps=lambda kmi: setContextToggleValues(kmi, 'CURVE', 'SPACE'))
             # falloff
             add(kmn, {'wm.context_menu_enum': {'data_path': 'tool_settings.' + v + '.brush.curve_preset'}},
                 'F shift')
 
         # paint curve
+        disable('Paint Curve', 'paintcurve.cursor', 'RIGHTMOUSE shift ctrl')
         add('Paint Curve', 'paintcurve.add_point_slide',
             'LEFTMOUSE DOUBLE_CLICK', disableOld='RIGHTMOUSE ctrl')
+        add('Paint Curve', {'paintcurve.select': {'toggle': True}},
+            'A DOUBLE_CLICK')
+        add('Paint Curve', {'paintcurve.slide': {'align': True}},
+            'RIGHTMOUSE ctrl', disableOld='RIGHTMOUSE shift')
         disable('Paint Curve', 'transform.translate', 'G')
         disable('Paint Curve', 'transform.translate', 'LEFTMOUSE CLICK_DRAG')
+        add('Paint Curve', 'transform.rotate',
+            'RIGHTMOUSE shift', disableOld='R', setKmiProps=lambda kmi: setOrientType(kmi, 'VIEW'))
+        add('Paint Curve', 'transform.resize',
+            'RIGHTMOUSE ctrl', disableOld='S')
 
         # dyntopo
         add('Sculpt', 'sculpt.dyntopo_detail_size_edit', 'D shift', disableOld='R')
@@ -1642,7 +1666,7 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         add('Sculpt', 'sculpt.mesh_filter',
             'S shift alt', setKmiProps=lambda kmi: setTypeProp(kmi, 'SMOOTH'))
 
-        # brushes
+        # tools (brushes)
         add('Sculpt', 'paint.brush_select',
             'ONE', disableOld='X', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'DRAW'))
         add('Sculpt', 'paint.brush_select',
@@ -1653,6 +1677,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'TWO', disableOld='C', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'CLAY'))
         add('Sculpt', 'paint.brush_select',
             'C', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'CLAY_STRIPS'))
+        add('Sculpt', 'paint.brush_select',
+            'B alt', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'BLOB'))
         add('Sculpt', {'paint.brush_select': {'toggle': True, 'create_missing': True}},
             'THREE shift', disableOld='S shift', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'SMOOTH'))
         add('Sculpt', 'paint.brush_select',
@@ -1667,6 +1693,10 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'E alt', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'ELASTIC_DEFORM'))
         add('Sculpt', 'paint.brush_select',
             'FIVE', disableOld='K', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'SNAKE_HOOK'))
+        add('Sculpt', 'paint.brush_select',
+            'N', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'NUDGE'))
+        add('Sculpt', 'paint.brush_select',
+            'T alt', setKmiProps=lambda kmi: setSculptToolProp(kmi, 'THUMB'))
 
         add('Sculpt', {'wm.tool_set_by_id': {'name': 'builtin.scale'}},
             'T DOUBLE_CLICK')
@@ -1716,7 +1746,17 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             add('Paint ' + kmn, 'view3d.select_lasso',
                 'RIGHTMOUSE shift ctrl alt CLICK_DRAG', setKmiProps=lambda kmi: setModeProp(kmi, 'SUB'))
 
-        # size/strenth effect
+        # blend
+        for kmn, v in {
+            'Vertex Paint': 'tool_settings.vertex_paint.',
+            'Image Paint': 'tool_settings.image_paint.',
+        }.items():
+            add(kmn, {'wm.context_menu_enum': {'data_path': v + 'brush.blend'}},
+                'D shift')
+        add('Image Paint', {'wm.context_toggle_enum': {'data_path': 'tool_settings.image_paint.brush.blend'}},
+            'LEFTMOUSE ctrl alt', setKmiProps=lambda kmi: setContextToggleValues(kmi, 'ERASE_ALPHA', 'MIX'))
+
+        # brush
         for kmn, v in {
             'Vertex Paint': 'tool_settings.vertex_paint.brush',
             'Image Paint': 'tool_settings.image_paint.brush',
@@ -1747,8 +1787,6 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
                 'zoom_path': '',
                 'secondary_tex': True if kmn == 'Image Paint' else False}},
                 'E', disableOld='F shift')
-
-        # weight
         add('Weight Paint', {'wm.radial_control': {
             'data_path_primary': 'tool_settings.weight_paint.brush.weight',
             'data_path_secondary': 'tool_settings.unified_paint_settings.weight',
@@ -1758,32 +1796,34 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'image_id': 'tool_settings.weight_paint.brush',
             'secondary_tex': False}},
             'W alt', disableOld='F ctrl')
-
-        # unified color
         add('Image Paint', {'wm.context_toggle': {'data_path': 'scene.tool_settings.unified_paint_settings.use_unified_color'}},
             'U alt')
+
+        # texture mask
+        add('Image Paint', {'wm.call_panel': {'name': 'VIEW3D_PT_tools_mask_texture'}},
+            'T')
+        add('Image Paint', {'wm.radial_control': {
+            'data_path_primary': 'tool_settings.image_paint.brush.mask_texture_slot.angle',
+            'rotation_path': 'tool_settings.image_paint.brush.mask_texture_slot.angle',
+            'color_path': 'tool_settings.image_paint.brush.cursor_color_add',
+            'fill_color_path': 'tool_settings.image_paint.brush.color',
+            'fill_color_override_path': 'tool_settings.unified_paint_settings.color',
+            'fill_color_override_test_path': 'tool_settings.unified_paint_settings.use_unified_color',
+            'image_id': 'tool_settings.image_paint.brush',
+            'secondary_tex': True}},
+            'R alt', disableOld='F ctrl alt')
 
         # stencil texture
         for kmn in ['Vertex Paint', 'Image Paint', 'Sculpt']:
             add(kmn, 'brush.stencil_control',
                 'RIGHTMOUSE CLICK_DRAG', disableOld='RIGHTMOUSE', setKmiProps=lambda kmi: setModeProp(kmi, 'TRANSLATION'))
-            disable(kmn, {'brush.stencil_control': {'mode': 0, 'texmode': 1}})
             add(kmn, 'brush.stencil_control',
-                'RIGHTMOUSE ctrl CLICK_DRAG', disableOld='RIGHTMOUSE shift', setKmiProps=lambda kmi: setModeProp(kmi, 'SCALE'))
-            disable(kmn, {'brush.stencil_control': {'mode': 1, 'texmode': 1}})
+                'RIGHTMOUSE alt CLICK_DRAG', disableOld='RIGHTMOUSE shift', setKmiProps=lambda kmi: setModeProp(kmi, 'SCALE'))
             add(kmn, 'brush.stencil_control',
                 'RIGHTMOUSE shift CLICK_DRAG', disableOld='RIGHTMOUSE ctrl', setKmiProps=lambda kmi: setModeProp(kmi, 'ROTATION'))
+            disable(kmn, {'brush.stencil_control': {'mode': 0, 'texmode': 1}})
+            disable(kmn, {'brush.stencil_control': {'mode': 1, 'texmode': 1}})
             disable(kmn, {'brush.stencil_control': {'mode': 2, 'texmode': 1}})
-
-        # blend
-        for kmn, v in {
-            'Vertex Paint': 'tool_settings.vertex_paint.',
-            'Image Paint': 'tool_settings.image_paint.',
-        }.items():
-            add(kmn, {'wm.context_menu_enum': {'data_path': v + 'brush.blend'}},
-                'D shift')
-        add('Image Paint', {'wm.context_toggle_enum': {'data_path': 'tool_settings.image_paint.brush.blend'}},
-            'LEFTMOUSE ctrl alt', setKmiProps=lambda kmi: setContextToggleValues(kmi, 'ERASE_ALPHA', 'MIX'))
 
         # color
         disable('Sculpt', 'sculpt.sample_color', 'S')
@@ -2046,6 +2086,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         # group
         add('Node Editor', 'node.group_make',
             'G DOUBLE_CLICK', disableOld='G ctrl')
+        add('Node Editor', 'node.group_make',
+            'G shift ctrl')
         add('Node Editor', 'node.group_insert',
             'G ctrl')
         add('Node Editor', 'node.group_separate',
@@ -2197,6 +2239,9 @@ def setDelimitProp(kmi, *args): kmi.properties.delimit = args[0]
 
 
 def setValueProp(kmi, *args): kmi.properties.value = args[0]
+
+
+def setOrientType(kmi, *args): kmi.properties.orient_type = args[0]
 
 
 def setCloseSplineProp(

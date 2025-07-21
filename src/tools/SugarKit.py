@@ -17,19 +17,21 @@ def Props(isRegister):
         setActiveBrushTextureImageInContext(
             context, self.nym_active_brush_texture_image)
 
+    def handleActiveBrushMaskTextureImageUpdate(self, context):
+        setActiveBrushTextureImageInContext(
+            context, self.nym_active_brush_mask_texture_image)
+
     if isRegister:
         bpy.types.Object.nym_active_vert_group_name = bpy.props.StringProperty(
-            name="",
-            update=handleActiveVertGroupNameUpdate
-        )
+            name="", update=handleActiveVertGroupNameUpdate)
         bpy.types.Scene.nym_active_brush_texture_image = bpy.props.PointerProperty(
-            name="",
-            type=bpy.types.Image,
-            update=handleActiveBrushTextureImageUpdate
-        )
+            name="", type=bpy.types.Image, update=handleActiveBrushTextureImageUpdate)
+        bpy.types.Scene.nym_active_brush_mask_texture_image = bpy.props.PointerProperty(
+            name="", type=bpy.types.Image, update=handleActiveBrushMaskTextureImageUpdate)
     else:
         del bpy.types.Object.nym_active_vert_group_name
         del bpy.types.Scene.nym_active_brush_texture_image
+        del bpy.types.Scene.nym_active_brush_mask_texture_image
 
 
 def Menus(isRegister):
@@ -385,35 +387,49 @@ class ModifierSetupRadialArrayOperator(bpy.types.Operator):
 
 # TODO: 3.2.x
 # SetupCurveArrayModifierOperator [shift alt C A]
-# * if curve not selected or many selected target objects:
+#
+# result object tree:
+# [prototype]
+#   [ curve] - curve the prototype refers to
+#   [curve.001]
+#     [prototype copy]
+#   [curve.002]
+#     [prototype copy]
+#
+# part 1 - process selection:
+# * if many objects selected or curves not selected:
 #   - return
+# * if object not selected:
+#   - sample (select) object
+# * if selected object has a parent with the same object data (has prototype):
+#   - replace selected object with prototype
+# * for each curve do
+#   * if curve is a curve the prototype refers to in array/curve mods
+#       or has a child that refers to it in array/curve mods:
+#     - deselect this curve
 # * if many curves selected:
-#   - join selected curves (to separete them alltogether later)
-# * if target object not selected:
-#   - sample target object
-# when both curve/s and target object selected:
-# - CurveAppendToObjectWithModifiersOperator
-
-
-# TODO: 3.2.x
-# CurveAppendToObjectWithModifiersOperator
+#   - join selected curves
 # - separete curve by loose splines
-# part 1:
-# - center target origin and active curve origin
-# - move target to active curve
-# - apply target scale and copy rotation from active curve
-# - parent active curve to target (and target to curve parent if parent exists)
-# part 2:
-# * if target already has array and curve mods:
-#   - delete array and curve mods
-# - add array modifier to target: set type to fit curve and curve to the parented curve
-# - add curve modifier to target: set curve to the parented curve
-# part 3:
-# * for each separated curve spline do parts 1-3:
-#   - duplicate parent target object (with linked data)
-#   - parent duplicated object to original target
-#   - set duplicated object as new target
-#   - execute parts 1 and 2 (change modifiers curve target)
+# - set curve/s parent to prototype object
+#
+# part 2 - iterate curves:
+# * for each curve do
+#   - strip() curve name from spaces
+#   * if prototype doesnt have array/curve mods [!]:
+#     - set prototype as target
+#     - add space char before curve name to uplift it in prototype child list
+#   * elif:
+#     - copy prototype object (with linked data, without array/curve mods)
+#     - set copied object as new target
+#   part 2.1 - position target:
+#   - center target origin and active curve origin
+#   - move target to active curve
+#   - apply target scale and copy rotation from active curve
+#   * if target is not prototype [!]:
+#     - parent target to active curve
+#   part 2.2 - apply mods:
+#   - add array modifier to target: set type to fit curve and curve to the parented curve
+#   - add curve modifier to target: set curve to the parented curve
 #
 # https://blenderartists.org/t/how-to-draw-an-object-selection-eyedropper-in-an-addon/1287437/8?u=nyamba
 
@@ -669,6 +685,33 @@ class BrushTextureImageSetMenu(bpy.types.Menu):
             context.scene, "nym_active_brush_texture_image", new="image.new", open="image.open")
 
 
+class BrushMaskTextureImageSetMenuOperator(bpy.types.Operator):
+    bl_label = "Brush Mask Texture Image Set Menu"
+    bl_idname = "paint.nym_brush_mask_texture_image_set_active_menu"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        tex = getActiveBrushMaskTextureInContext(context)
+        if not tex:
+            self.report({'INFO'}, "Brush has no texture!")
+            return {'FINISHED'}
+
+        context.scene.nym_active_brush_mask_texture_image = tex.image
+        bpy.ops.wm.call_menu(
+            name=BrushMaskTextureImageSetMenu.bl_idname)
+        return {'FINISHED'}
+
+
+class BrushMaskTextureImageSetMenu(bpy.types.Menu):
+    bl_label = "Set Mask Texture Image"
+    bl_idname = "nym_brush_mask_texture_image_set_active_menu"
+
+    def draw(self, context):
+        layout = self.layout
+        layout.template_ID(
+            context.scene, "nym_active_brush_mask_texture_image", new="image.new", open="image.open")
+
+
 # / Sculpt Tools
 
 
@@ -724,7 +767,7 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
       Extrude: Dbl-LM/E | 
       Insert/Delete: Alt+LM | 
       Dissolve: Ctrl+X | 
-      Move/Scale/Rotate: RM/Shift+RM/Ctrl+RM | 
+      Move/Scale/Rotate: RM/Shift+RM/Alt+RM | 
       Innards/Exterior: T | 
       Cyclic: Shift+C | 
       Smooth: Shift+Alt+S | 
@@ -832,7 +875,6 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
             # Extend
             kmiPenExtend = penKeymap.keymap_items.new(
                 'curve.pen', 'LEFTMOUSE', 'PRESS', shift=True)
-            # kmiPenExtend.properties['select_point'] = True
             kmiPenExtend.properties['extend'] = True
             # Select
             kmiPenSelect = penKeymap.keymap_items.new(
@@ -852,18 +894,16 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
                 'curve.pen', 'LEFTMOUSE', 'PRESS', alt=True)
             kmiPenInsertDelete.properties['insert_point'] = True
             kmiPenInsertDelete.properties['delete_point'] = True
-            # Quick move
+            # Quick move/rotate/scale
             kmiPenDrag = penKeymap.keymap_items.new(
                 'transform.translate', 'RIGHTMOUSE', 'CLICK_DRAG')
             kmiPenDrag.properties['use_snap_self'] = True
             kmiPenDrag.properties['use_snap_edit'] = True
             kmiPenDrag.properties['use_snap_nonedit'] = True
-            # Quick rotate
             kmiPenDrag = penKeymap.keymap_items.new(
                 'transform.rotate', 'RIGHTMOUSE', 'CLICK_DRAG', shift=True)
-            # Quick scale
             kmiPenDrag = penKeymap.keymap_items.new(
-                'transform.resize', 'RIGHTMOUSE', 'CLICK_DRAG', ctrl=True)
+                'transform.resize', 'RIGHTMOUSE', 'CLICK_DRAG', alt=True)
 
     def modal(self, context, event):
         # C(event.type, ": ", event.value)
@@ -954,7 +994,7 @@ class SculptTrimCurveModalOperator(bpy.types.Operator):
             elif isPen and event.type == 'LEFTMOUSE' and event.alt:
                 self.historySteps += 1
                 return {'PASS_THROUGH'}
-            # Drag
+            # Quick move/rotate/scale
             elif isPen and event.type == 'RIGHTMOUSE' and event.value not in ['RELEASE', 'CLICK']:
                 return {'PASS_THROUGH'}
 

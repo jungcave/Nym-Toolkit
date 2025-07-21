@@ -327,6 +327,9 @@ select
   group	(contents)	G			[+]
   grouped objects	G			{n}
     unhide		  dbl G
+  ||
+  children (descndnts)  shift dbl D		[+]
+  parent		  shift D		[+]
 
 object
   duplicate		ctrl D			[+]
@@ -546,9 +549,9 @@ copy	  	  	ctrl C
   ||
   linked (hovered)	L
     deselect (hovered)    dbl L			[*] shift L # select linked [deselect]
-    all (extend)  	  shift L		[*] ctrl L # select linked , select linked all
-      quick		    alt dbl shift	[+]
-      material		    shift ctrl L	[+]
+    selected (extend)
+      all [seam/mat]	shift L			[*] ctrl L # select linked , select linked all
+      quick		  alt dbl shift		[+]
 
 [mesh]
   menu			clk RB			[*] RB # 3d->mesh > call menu > RB [click]
@@ -615,7 +618,7 @@ mesh transforms
 quick tools
   extrude		E
     *normalise		  alt
-    to cursor		  alt RB		[*] ctrl RB # mesh,curve > extrude to cursor or add
+    to cursor		  alt clk RB		[*] ctrl clk RB # mesh,curve > extrude to cursor or add
       no rotate	    	    ctrl alt RB		[*] shift ctrl RB # extrude to cursor or add [_]:rotate
     menu		  ctrl E		[*] alt E # extrude [wn.call_menu] [VIEW3D_MT_edit_mesh_extrude] 
     along normals	  alt E			[+]
@@ -645,7 +648,7 @@ quick tools
   fatten		ctrl F			[*] alt S # shrink/fatten 
   shear			alt R			[*] shift ctrl alt S # 3d > shear [transform.shear]
   ||
-  smooth [vert]		shift alt S		[+]
+  smooth [vert]		shift alt S		[+] 
   ||
   crease [edge]		alt C			[*] shift E
     *clear		  -1
@@ -696,8 +699,8 @@ Add depth:
 select whole handle	dbl shift		{n}
 
 quick transforms
+  scale			alt drag RB		[+]
   rotate		shift drag RB		[+]
-  scale			ctrl drag RB	** alt drag RB	[+]
 
 [curve]
   curve type		shift ctrl T		[+]
@@ -709,7 +712,7 @@ quick transforms
     fill caps	  	shift F
   ||
   extrude		E
-    to cursor (adaptive)  alt RB   ** alt clk RB		[*] ctrl RB
+    to cursor (adaptive)  alt clk RB		[*] ctrl clk RB
   duplicate (splited)	ctrl D			[*] shift D
   ||
   toggle cyclic (close) shift ctrl C		[*] alt C
@@ -765,9 +768,11 @@ Adjust tablet pressure:
     api:[wintab]
     softness:[-0.5]
 
+[direction]
+  toggle [+/-]		ctrl alt LB		[+]
+
 brush
   menu			clk RB			[*] RB # 3d->sculpt/vertex/weight/image > [wm.call_panel] > RB [click]
-  ||
   select (menu)		shift B			[+]
   ||
   radius (size)		S			[*] F # [wm.radial_control]
@@ -781,36 +786,29 @@ brush
 [texture]
   select (menu)		shift T			[+]
     set image		  ctrl T		{n}
-  angle (rotation)	alt R			[*] ctrl F # 3d->sculpt > [wm.radial_control] primary:[tool_settings.sculpt.brush.texture_slot.angle]
+  angle (rotation)	R			[*] ctrl F
 
 [stroke]		LB
-  invert		  ctrl
+  invert		  ctrl LB
+  menu			  shift S		[+]
   ||
-  jitter		** J			[+]
-  spacing		** alt J		[+]
-  ||
-  smooth (toggle)	shift ctrl LB		[*] shift S # 3d->sculpt/vertex/weight/image > [wm.context_toggle] context:[tool_settings.|sculpt,vertex/weight/image_paint|.brush.use_smooth_stroke]
-    radius factor	  R			[+]
-  ||
-  method		shift S			[*] E # context enum menu
+  method					[-] E # context enum menu
     line (toggle)	  alt dbl LB		[+]
       *snap		    alt
     curve (toggle)	  shift alt LB		[+]
+  smooth (toggle)	shift ctrl LB		[*] shift S # 3d->sculpt/vertex/weight/image > [wm.context_toggle] context:[tool_settings.|sculpt,vertex/weight/image_paint|.brush.use_smooth_stroke]
 
-paint curve					** [-] shift ctrl RB # place cursor
-  add point		dbl LB			[*] ctrl RB # paint curve > add curve point and slide
+paint curve					[-] shift ctrl RB # place cursor
   draw (apply)   	enter , ctrl LB
+  add point		dbl LB			[*] ctrl RB # paint curve > add curve point and slide
   select (set)	    	LB
     extend (toggle)	  shift LB
-    none/all		  A ** , dbl A		[,+]
-  slide [rot+sca]	** ctrl RB		[*] shift RB
+    none/all		  A , dbl A		[,+]
+  slide [rot+sca]	ctrl RB			[*] shift RB
     move		  RB			[-] G [-] drag LB
-  rotate		** shift RB		[*] R #* [view]:orientation
-  scale			** alt RB		[*] S
+  scale			alt RB			[*] S
+  rotate		shift RB		[*] R #* [view]:orientation
   remove		ctrl X , backspace	[,*] delete
-
-[direction]
-  toggle [+/-]		** ctrl alt LB		[+]
 
 [falloff]
   preset		shift F			[+]
@@ -918,7 +916,7 @@ modifiers
   clay			2			[*] C
     clay strips		  C			[+]
   inflate		I
-  blob		  	** alt B		[+]
+  blob		  	alt B			[+]
   layer			L
   ||
   smooth		shift 3			[*#] shift S # brush select [smooth] [v]:toggle [v]:create
@@ -931,9 +929,9 @@ modifiers
   grab			G	
     elastic		  alt E			[+]
     snake hook		  5			[*] K
-    nudge [flat grab]	  ** N			[+]
+    nudge [flat grab]	  N			[+]
   pinch			P
-  thumb			** alt T		[+]
+  thumb			alt T			[+]
   ||
   transform (unmasked)	T
     scale		  dbl T			[+]
@@ -980,40 +978,26 @@ quick select
 
 select group		G			{n}
 
+[blend]
+  mode			shift D			[+]
+  eraser (toggle)	ctrl alt LB		[+]
+
 [brush]
-  select (menu)		shift B			[+] 
-  ||
-  radius (size)		S			[*] F
-  strength (effect)	E			[*] shift F
+  radius (size)		S			[*] F # [wm.radial_control]
+  strength (effect)	E			[*] shift F # [wm.radial_control]
   ||
   weight		alt W			[*] ctrl F # 3d->weight > [wm.radial_control] primary:[tool_settings.weight_paint.brush.weight]
   unified color		alt U			[+]
 
 [texture mask]
-  select (menu)		** T			[+] 
-    set image		  ++ ** alt T		{n}
+  select (menu)		T			[+] 
+    set image		  alt T			{n}
+  angle (rotation)	alt R			[*] ctrl alt F
 
 stencil texture
   move			drag RB			[*] RB [-] shift alt RB # stencil brush control [secondary]
-  scale			ctrl drag RB 	** alt drag RB	[*] shift RB [-] shift alt RB # stencil brush control [secondary]
+  scale			alt drag RB		[*] shift RB [-] shift alt RB # stencil brush control [secondary]
   rotate		shift drag RB		[*] ctrl RB [-] ctrl alt RB # stencil brush control [secondary]
-
-[stroke]		LB
-  invert		  ctrl LB
-  ||
-  smooth (toggle)	shift ctrl LB		[*] shift S # context toggle
-    radius factor	  R			[+] 
-  ||
-  method		shift S			[*] E
-    line (toggle)	  alt dbl LB		[+] 
-    curve (toggle)	  shift alt LB		[+] 
-
-[blend]
-  mode			shift D			[+]
-  eraser (toggle)	ctrl alt LB		[+]
-
-[falloff]
-  preset		shift F			[+] 
 
 [color]
   sample		shift LB , shift dbl LB	[*,+] S
@@ -1257,7 +1241,7 @@ frame (block)		dbl B			[*] ctrl J # node > join nodes [node.join]
   ||
   rename (label)	ctrl R , alt enter
 
-group			dbl G ** , shift ctrl G	[*,+] ctrl G
+group			dbl G , shift ctrl G	[*,+] ctrl G
   insert		  ctrl G		[+]
     separate		    alt G		[*] P # node > separate [node.group_separate]
   ungroup		  ctrl alt G

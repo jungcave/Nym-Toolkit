@@ -103,6 +103,10 @@ def register():
     for kmn in ["Sculpt", "Vertex Paint", "Weight Paint", "Image Paint"]:
         addAddonKeymapItem(kmn, BrushTextureImageSetMenuOperator.bl_idname,
                            'T ctrl')
+    bpy.utils.register_class(BrushMaskTextureImageSetMenuOperator)
+    bpy.utils.register_class(BrushMaskTextureImageSetMenu)
+    addAddonKeymapItem('Image Paint', BrushMaskTextureImageSetMenuOperator.bl_idname,
+                       'T alt')
     # Sculpt Draw Curve
     bpy.utils.register_class(SculptDrawCurveOperator)
     addAddonKeymapItem('Sculpt', SculptDrawCurveOperator.bl_idname,
@@ -237,6 +241,8 @@ def unregister():
     bpy.utils.unregister_class(CurveToggleFillCapsOperator)
     bpy.utils.unregister_class(BrushTextureImageSetMenuOperator)
     bpy.utils.unregister_class(BrushTextureImageSetMenu)
+    bpy.utils.unregister_class(BrushMaskTextureImageSetMenuOperator)
+    bpy.utils.unregister_class(BrushMaskTextureImageSetMenu)
     bpy.utils.unregister_class(SculptDrawCurveOperator)
     bpy.utils.unregister_class(SculptTrimCurveModalOperator)
     bpy.utils.unregister_class(SculptTrimCurveResolutionDialogOperator)
