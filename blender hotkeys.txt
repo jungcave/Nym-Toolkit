@@ -150,8 +150,8 @@ view interface
 // OBJECT
 
 [mode]
-  menu			shift tab		[*] ctrl tab # object mode menu
-  toggle		tab
+  menu			tab LB			[+] grease pencil +> object mode menu [-] ctrl tab # object mode menu
+  toggle		clk tab			[*]
     default (object)	  alt tab		[+]
   ||
   switch active		ctrl enter , ctrl RB	[*,+] alt Q # transfer mode
@@ -1094,8 +1094,8 @@ stencil texture
     all (fit)		dbl F			[+] frame all [v]:fit
 
 [mode]
-  IMAGE			shift tab		[+]
-  UV			shift tab		[+]
+  IMAGE			tab LB			[+]
+  UV			tab LB			[+]
 
 [UV]
   sync mode		`			[+]
@@ -1183,7 +1183,7 @@ Add normal texture:
 Add displacement texture (silhouette):
 - modifiers > displacement > [+] new > show texture > [texture props] image ↳ settings ↳ open > displacement
 
-[mode]			shift tab		[+]
+[mode]			tab LB			[+]
 
 [slot]			ctrl tab		[+]
 

@@ -317,11 +317,10 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
     @classmethod
     def addObjectHotkeys(cls):
         # mode
-        add('Object Non-modal', 'view3d.object_mode_pie_or_toggle',
-            'TAB shift', disableOld='TAB ctrl')
-        add('Sequencer', {'wm.context_set_int': {'data_path': 'scene.sequence_editor.overlay_frame', 'value': 0}},
-            'TAB ctrl', disableOld='O')
-
+        add('Grease Pencil', 'view3d.object_mode_pie_or_toggle', 'LEFTMOUSE TAB')
+        disable('Object Non-modal', 'view3d.object_mode_pie_or_toggle', 'TAB ctrl')
+        add('3D View', {'object.mode_set': {'toggle': True}},
+            'TAB CLICK', disableOld='TAB', setKmiProps=lambda kmi: setModeProp(kmi, 'OBJECT'))
         add('Object Non-modal', {'object.mode_set': {'toggle': False}},
             'TAB alt', setKmiProps=lambda kmi: setModeProp(kmi, 'OBJECT'))
         add('Object Non-modal', 'object.transfer_mode',
@@ -1911,10 +1910,10 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
             'F DOUBLE_CLICK')
 
         # mode
-        add('Image', {'wm.context_menu_enum': {'data_path': 'space_data.ui_mode'}},
-            'TAB shift')
-        add('UV Editor', {'wm.call_menu': {'name': 'IMAGE_MT_uvs_select_mode'}},
-            'TAB shift')
+        add('Image', {'wm.context_pie_enum': {'data_path': 'space_data.ui_mode'}},
+            'LEFTMOUSE TAB')
+        add('UV Editor', {'wm.call_menu_pie': {'name': 'IMAGE_MT_uvs_select_mode'}},
+            'LEFTMOUSE TAB')
 
         # uv
         add('UV Editor', {'wm.context_toggle': {'data_path': 'scene.tool_settings.use_uv_select_sync'}},
@@ -2016,8 +2015,8 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
     @classmethod
     def addShaderHotkeys(cls):
         # mode
-        add('Node Editor', {'wm.context_menu_enum': {'data_path': 'space_data.shader_type'}},
-            'TAB shift')
+        add('Node Editor', {'wm.context_pie_enum': {'data_path': 'space_data.shader_type'}},
+            'LEFTMOUSE TAB')
 
         # slot
         add('Node Editor', {'wm.call_panel': {'name': 'NODE_PT_material_slots'}},
