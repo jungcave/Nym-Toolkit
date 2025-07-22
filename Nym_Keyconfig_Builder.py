@@ -1,5 +1,6 @@
 import bpy
 import math
+import functools
 from .src.tools.SugarKit_helpers import C, CD, CL
 from .src.tools.SugarKit_helpers import (
     restoreDefaultKeymaps,
@@ -60,14 +61,14 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         # SHADER
         self.addShaderHotkeys()
 
-        clearAllInactiveKeymapItemsInKeyconfig(nkc)
-
         # ADDONS {b}
         bpy.app.timers.register(
-            lambda: self.editOuterAddonsHotkeys(self), first_interval=0.1)  # must run async to prevent user kyconf collision with clearAllInactiveKeymapItemsInKeyconfig \
+            functools.partial(self.editOuterAddonsHotkeys), first_interval=0.1)  # must run async to prevent user kyconf collision with clearAllInactiveKeymapItemsInKeyconfig \
+
+        clearAllInactiveKeymapItemsInKeyconfig(nkc)
 
         bpy.app.timers.register(
-            lambda: saveAndExportKeyconfig('Nym_Keyconfig.py'), first_interval=0.2)  # must run async to properly cache changes after editOuterAddonsHotkeys and clearAllInactiveKeymapItemsInKeyconfig \
+            functools.partial(saveAndExportKeyconfig, 'Nym_Keyconfig.py'), first_interval=0.2)  # must run async to properly cache changes after editOuterAddonsHotkeys and clearAllInactiveKeymapItemsInKeyconfig \
 
         return {'FINISHED'}
 
@@ -319,8 +320,9 @@ class BuildNymKeyconfigOperator(bpy.types.Operator):
         # mode
         add('Grease Pencil', 'view3d.object_mode_pie_or_toggle', 'LEFTMOUSE TAB')
         disable('Object Non-modal', 'view3d.object_mode_pie_or_toggle', 'TAB ctrl')
-        add('3D View', {'object.mode_set': {'toggle': True}},
-            'TAB CLICK', disableOld='TAB', setKmiProps=lambda kmi: setModeProp(kmi, 'OBJECT'))
+        for kmn in ['Object Non-modal', 'Image']:
+            add(kmn, {'object.mode_set': {'toggle': True}},
+                'TAB CLICK', disableOld='TAB', setKmiProps=lambda kmi: setModeProp(kmi, 'EDIT'))
         add('Object Non-modal', {'object.mode_set': {'toggle': False}},
             'TAB alt', setKmiProps=lambda kmi: setModeProp(kmi, 'OBJECT'))
         add('Object Non-modal', 'object.transfer_mode',
